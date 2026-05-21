@@ -1,1 +1,296 @@
-const AdminDashboard = () => <div>Admin Dashboard</div>; export default AdminDashboard;
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import Sidebar from "../../components/shared/Sidebar";
+import { getDashboardStats } from "../../services/api";
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid,
+  Tooltip, PieChart, Pie, Cell, ResponsiveContainer, Legend,
+} from "recharts";
+import {
+  FaUsers, FaFileAlt, FaCheckCircle,
+  FaTimesCircle, FaClock, FaUserShield,
+} from "react-icons/fa";
+import toast from "react-hot-toast";
+
+const COLORS = ["#f59e0b", "#3b82f6", "#10b981", "#ef4444"];
+const GENDER_COLORS = ["#6366f1", "#ec4899"];
+
+const adminLinks = [
+  { path: "/admin/dashboard", label: "Dashboard", icon: <FaFileAlt /> },
+  { path: "/admin/users", label: "User Management", icon: <FaUsers /> },
+];
+
+const AdminDashboard = () => {
+  const navigate = useNavigate();
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await getDashboardStats();
+        setStats(res.data.data);
+      } catch (error) {
+        toast.error("Error fetching dashboard data.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStats();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-gray-500">Loading dashboard...</p>
+      </div>
+    );
+  }
+
+  const applicationStatusData = [
+    { name: "Pending", value: stats?.applications?.pending || 0 },
+    { name: "Under Review", value: stats?.applications?.underReview || 0 },
+    { name: "Approved", value: stats?.applications?.approved || 0 },
+    { name: "Rejected", value: stats?.applications?.rejected || 0 },
+  ];
+
+  const genderData = [
+    { name: "Male", value: stats?.genderBreakdown?.male || 0 },
+    { name: "Female", value: stats?.genderBreakdown?.female || 0 },
+  ];
+
+  const userRoleData = [
+    { name: "Applicants", value: stats?.users?.applicants || 0 },
+    { name: "HR Managers", value: stats?.users?.hrManagers || 0 },
+    { name: "Super Admins", value: stats?.users?.superAdmins || 0 },
+  ];
+
+  const statCards = [
+    {
+      label: "Total Users",
+      value: stats?.users?.total || 0,
+      icon: <FaUsers className="text-indigo-500 text-2xl" />,
+      bg: "bg-indigo-50",
+    },
+    {
+      label: "Total Applications",
+      value: stats?.applications?.total || 0,
+      icon: <FaFileAlt className="text-blue-500 text-2xl" />,
+      bg: "bg-blue-50",
+    },
+    {
+      label: "Approved",
+      value: stats?.applications?.approved || 0,
+      icon: <FaCheckCircle className="text-green-500 text-2xl" />,
+      bg: "bg-green-50",
+    },
+    {
+      label: "Rejected",
+      value: stats?.applications?.rejected || 0,
+      icon: <FaTimesCircle className="text-red-500 text-2xl" />,
+      bg: "bg-red-50",
+    },
+    {
+      label: "Pending",
+      value: stats?.applications?.pending || 0,
+      icon: <FaClock className="text-yellow-500 text-2xl" />,
+      bg: "bg-yellow-50",
+    },
+    {
+      label: "Active Users",
+      value: stats?.users?.active || 0,
+      icon: <FaUserShield className="text-purple-500 text-2xl" />,
+      bg: "bg-purple-50",
+    },
+  ];
+
+  return (
+    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
+      <Sidebar links={adminLinks} />
+
+      <div className="ml-64 flex-1 p-8">
+        {/* Header */}
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+          Admin Dashboard
+        </h1>
+        <p className="text-gray-500 dark:text-gray-400 mb-8">
+          Full system overview
+        </p>
+
+        {/* Stat Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {statCards.map((card) => (
+            <div
+              key={card.label}
+              className={`${card.bg} rounded-xl p-5 flex items-center space-x-4 shadow-sm`}
+            >
+              <div>{card.icon}</div>
+              <div>
+                <p className="text-sm text-gray-500">{card.label}</p>
+                <p className="text-2xl font-bold text-gray-800">{card.value}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Charts Row 1 */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          {/* Application Status Pie */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+              Applications by Status
+            </h2>
+            <ResponsiveContainer width="100%" height={220}>
+              <PieChart>
+                <Pie
+                  data={applicationStatusData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={50}
+                  outerRadius={80}
+                  paddingAngle={5}
+                  dataKey="value"
+                >
+                  {applicationStatusData.map((entry, index) => (
+                    <Cell key={index} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Gender Pie */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+              Applications by Gender
+            </h2>
+            <ResponsiveContainer width="100%" height={220}>
+              <PieChart>
+                <Pie
+                  data={genderData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={50}
+                  outerRadius={80}
+                  paddingAngle={5}
+                  dataKey="value"
+                >
+                  {genderData.map((entry, index) => (
+                    <Cell key={index} fill={GENDER_COLORS[index % GENDER_COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* User Roles Bar */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+              Users by Role
+            </h2>
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={userRoleData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                <YAxis allowDecimals={false} />
+                <Tooltip />
+                <Bar dataKey="value" fill="#6366f1" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Recent Applications and Audit Logs */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Recent Applications */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
+                Recent Applications
+              </h2>
+            </div>
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-gray-500 border-b dark:border-gray-700">
+                  <th className="pb-3">Name</th>
+                  <th className="pb-3">Status</th>
+                  <th className="pb-3">Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {stats?.recentApplications?.map((app) => (
+                  <tr
+                    key={app.id}
+                    className="border-b dark:border-gray-700"
+                  >
+                    <td className="py-3 text-gray-800 dark:text-gray-200">
+                      {app.firstName} {app.lastName}
+                    </td>
+                    <td className="py-3">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        app.status === "PENDING"
+                          ? "bg-yellow-100 text-yellow-700"
+                          : app.status === "UNDER_REVIEW"
+                          ? "bg-blue-100 text-blue-700"
+                          : app.status === "APPROVED"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-red-100 text-red-700"
+                      }`}>
+                        {app.status}
+                      </span>
+                    </td>
+                    <td className="py-3 text-gray-500">
+                      {new Date(app.createdAt).toLocaleDateString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Audit Logs */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+              Recent Activity
+            </h2>
+            {stats?.recentAuditLogs?.length > 0 ? (
+              <div className="space-y-3">
+                {stats.recentAuditLogs.map((log) => (
+                  <div
+                    key={log.id}
+                    className="flex items-start space-x-3 border-b dark:border-gray-700 pb-3"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-xs font-bold flex-shrink-0">
+                      {log.user?.firstName?.charAt(0) || "S"}
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-800 dark:text-gray-200">
+                        <span className="font-medium">
+                          {log.user
+                            ? `${log.user.firstName} ${log.user.lastName}`
+                            : "System"}
+                        </span>{" "}
+                        {log.action.toLowerCase().replace(/_/g, " ")}
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        {new Date(log.createdAt).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 text-sm">No recent activity.</p>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default AdminDashboard;

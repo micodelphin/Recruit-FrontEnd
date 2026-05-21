@@ -44,18 +44,19 @@ function App() {
           } />
 
           {/* HR routes */}
+          {/* HR routes */}
           <Route path="/hr/dashboard" element={
-            <ProtectedRoute roles={['HR']}>
+            <ProtectedRoute roles={['HR', 'SUPER_ADMIN']}>
               <HRDashboard />
             </ProtectedRoute>
           } />
           <Route path="/hr/applications" element={
-            <ProtectedRoute roles={['HR']}>
+            <ProtectedRoute roles={['HR', 'SUPER_ADMIN']}>
               <ApplicationList />
             </ProtectedRoute>
           } />
           <Route path="/hr/applications/:id" element={
-            <ProtectedRoute roles={['HR']}>
+            <ProtectedRoute roles={['HR', 'SUPER_ADMIN']}>
               <ApplicationDetail />
             </ProtectedRoute>
           } />

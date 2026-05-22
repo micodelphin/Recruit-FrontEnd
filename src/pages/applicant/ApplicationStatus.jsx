@@ -4,6 +4,7 @@ import { getMyApplication } from "../../services/api";
 import { useAuth } from "../../context/authContex";
 import toast from "react-hot-toast";
 
+
 const statusConfig = {
   PENDING: {
     label: "Pending",
@@ -174,6 +175,21 @@ const ApplicationStatus = () => {
           <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
             Academic Information
           </h2>
+          {/* <div className="mb-4">
+    <span className={`px-3 py-1 rounded-full text-sm font-bold ${
+      application?.nesaResult === 'PASS'
+        ? 'bg-green-100 text-green-700'
+        : application?.nesaResult === 'FAIL'
+        ? 'bg-red-100 text-red-700'
+        : 'bg-gray-100 text-gray-500'
+    }`}>
+      {application?.nesaResult === 'PASS'
+        ? '✅ PASS'
+        : application?.nesaResult === 'FAIL'
+        ? '❌ FAIL'
+        : 'N/A'}
+    </span>
+  </div> */}
           <div className="grid grid-cols-2 gap-4 text-sm text-gray-700 dark:text-gray-300">
             <div>
               <p className="font-medium text-gray-500">School</p>

@@ -122,6 +122,7 @@ const ApplicationForm = () => {
       formData.append("schoolName", nesaData.school);
       formData.append("combination", nesaData.option);
       formData.append("yearOfCompletion", nesaData.yearCompleted);
+      formData.append("nesaResult", nesaData.result);
 
     
       const grades = nesaData.grades;
@@ -345,32 +346,49 @@ const ApplicationForm = () => {
               </div>
 
               {/* NESA Summary */}
-              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4 mb-6">
-                <p className="text-sm font-semibold text-blue-700 dark:text-blue-400 mb-2">
-                  ✓ Academic Records
-                </p>
-                <div className="grid grid-cols-2 gap-2 text-sm text-gray-700 dark:text-gray-300">
-                  <p><span className="font-medium">School:</span> {nesaData?.school}</p>
-                  <p><span className="font-medium">Option:</span> {nesaData?.option}</p>
-                  <p><span className="font-medium">Year:</span> {nesaData?.yearCompleted}</p>
-                </div>
-                {/* Grades */}
-                <div className="mt-3">
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Grades:
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {Object.entries(nesaData?.grades || {}).map(([subject, grade]) => (
-                      <span
-                        key={subject}
-                        className="bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-200 text-xs px-2 py-1 rounded-full"
-                      >
-                        {subject}: {grade}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
+              {/* NESA Summary */}
+{/* Show NESA data as read-only */}
+<div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4 mb-6">
+  <p className="text-sm font-semibold text-blue-700 dark:text-blue-400 mb-2">
+    ✓ Academic Records Verified
+  </p>
+
+  {/* Result Badge */}
+  <div className="mb-3">
+    <span className={`px-3 py-1 rounded-full text-sm font-bold ${
+      nesaData?.result === 'PASS'
+        ? 'bg-green-100 text-green-700'
+        : 'bg-red-100 text-red-700'
+    }`}>
+      {nesaData?.result === 'PASS' ? '✅ PASS' : '❌ FAIL'}
+    </span>
+  </div>
+
+  <div className="grid grid-cols-2 gap-2 text-sm text-gray-700 dark:text-gray-300">
+    <p><span className="font-medium">Name:</span> {nesaData?.fullName}</p>
+    <p><span className="font-medium">School:</span> {nesaData?.school}</p>
+    <p><span className="font-medium">Option:</span> {nesaData?.option}</p>
+    <p><span className="font-medium">Year:</span> {nesaData?.yearCompleted}</p>
+  </div>
+
+  {/* Grades */}
+  <div className="mt-3">
+    <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+      Grades:
+    </p>
+    <div className="flex flex-wrap gap-2">
+      {Object.entries(nesaData?.grades || {}).map(([subject, grade]) => (
+        <span
+          key={subject}
+          className="bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-200 text-xs px-2 py-1 rounded-full"
+        >
+          {subject}: {grade}
+        </span>
+      ))}
+    </div>
+  </div>
+</div>
+
 
               {/* CV Upload */}
               <div className="mb-6">

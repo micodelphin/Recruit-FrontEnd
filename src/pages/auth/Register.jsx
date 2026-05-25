@@ -87,11 +87,8 @@ const Register = () => {
         email: formData.email,
         password: formData.password,
       });
-
-      const { token, user } = res.data.data;
-      loginUser(token, user);
-      toast.success("Account created successfully!");
-      navigate("/apply");
+      toast.success("Account created successfully! Please login.");
+      navigate("/login");
     } catch (error) {
       const message =
         error.response?.data?.message ||

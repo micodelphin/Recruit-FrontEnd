@@ -182,16 +182,16 @@ const Login = () => {
           </button>
         </form>
 
-        {/* Divider */}
+        {/* Divider
         <div className="flex items-center my-6">
           <hr className="flex-grow border-gray-300 dark:border-gray-600" />
           <span className="mx-2 text-gray-500 dark:text-gray-400 text-sm">
             Or continue with
           </span>
           <hr className="flex-grow border-gray-300 dark:border-gray-600" />
-        </div>
+        </div> */}
 
-        {/* Google Button */}
+        {/* Google Button
         <button className="w-full border border-gray-300 dark:border-gray-600 rounded-md py-2 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700">
           <img
             src="https://www.svgrepo.com/show/355037/google.svg"
@@ -199,7 +199,7 @@ const Login = () => {
             className="w-5 h-5 mr-2"
           />
           <span className="text-gray-700 dark:text-gray-300">Google</span>
-        </button>
+        </button> */}
 
         {/* Footer */}
         <p className="text-center text-sm text-gray-600 dark:text-gray-400 mt-6">

@@ -12,6 +12,19 @@ import {
 } from "react-icons/fa";
 import toast from "react-hot-toast";
 
+import {
+  BarChart as TremorBarChart,
+  Card,
+  List,
+  ListItem,
+  Tab,
+  TabGroup,
+  TabList,
+  TabPanel,
+  TabPanels,
+} from '@tremor/react';
+
+
 const COLORS = ["#f59e0b", "#3b82f6", "#10b981", "#ef4444"];
 const GENDER_COLORS = ["#6366f1", "#ec4899"];
 
@@ -188,20 +201,117 @@ const AdminDashboard = () => {
           </div>
 
           {/* User Roles Bar */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
-              Users by Role
-            </h2>
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={userRoleData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                <YAxis allowDecimals={false} />
-                <Tooltip />
-                <Bar dataKey="value" fill="#6366f1" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+          {/* User Roles Tremor Tabbed Chart */}
+<Card className="!bg-white !shadow-sm rounded-xl p-6">
+  <h2 className="text-lg font-semibold text-gray-800 mb-4">
+    Users by Role
+  </h2>
+  <TabGroup>
+    <TabList className="mt-4 space-x-0 border-t border-gray-200">
+      {[
+        {
+          name: 'Applicants',
+          total: stats?.users?.applicants || 0,
+          change: `${stats?.users?.active || 0} active`,
+        },
+        {
+          name: 'HR & Admins',
+          total: (stats?.users?.hrManagers || 0) + (stats?.users?.superAdmins || 0),
+          change: `${stats?.users?.hrManagers || 0} HR`,
+        },
+      ].map((tab) => (
+        <Tab
+          key={tab.name}
+          className="w-full px-4 text-left hover:bg-gray-50 ui-selected:border-b-2 ui-selected:border-indigo-600"
+        >
+          <p className="text-sm text-gray-500">{tab.name}</p>
+          <p className="text-xl font-bold text-gray-800">{tab.total}</p>
+          <p className="mt-1 text-xs text-emerald-600 font-medium">{tab.change}</p>
+        </Tab>
+      ))}
+    </TabList>
+
+    <TabPanels>
+      {[
+        {
+          name: 'Applicants',
+          data: [
+            { date: 'Total', Users: stats?.users?.applicants || 0 },
+            { date: 'Active', Users: stats?.users?.active || 0 },
+            { date: 'Inactive', Users: stats?.users?.inactive || 0 },
+          ],
+          details: [
+            { name: 'Total Applicants', value: stats?.users?.applicants || 0, color: 'bg-indigo-500' },
+            { name: 'Active', value: stats?.users?.active || 0, color: 'bg-emerald-500' },
+            { name: 'Inactive', value: stats?.users?.inactive || 0, color: 'bg-red-500' },
+          ],
+        },
+        {
+          name: 'HR & Admins',
+          data: [
+            { date: 'HR Managers', Users: stats?.users?.hrManagers || 0 },
+            { date: 'Super Admins', Users: stats?.users?.superAdmins || 0 },
+          ],
+          details: [
+            { name: 'HR Managers', value: stats?.users?.hrManagers || 0, color: 'bg-purple-500' },
+            { name: 'Super Admins', value: stats?.users?.superAdmins || 0, color: 'bg-red-500' },
+          ],
+        },
+      ].map((panel) => (
+        <TabPanel key={panel.name}>
+          {/* Use recharts BarChart instead of Tremor to avoid dark issues */}
+          <ResponsiveContainer width="100%" height={150}>
+            <BarChart data={panel.data}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis
+                dataKey="date"
+                tick={{ fontSize: 11, fill: '#6b7280' }}
+              />
+              <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#6b7280' }} />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: 'white',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '8px',
+                  color: '#1f2937',
+                }}
+              />
+              <Bar dataKey="Users" radius={[4, 4, 0, 0]}>
+  {panel.data.map((entry, index) => (
+    <Cell
+      key={index}
+      fill={
+        entry.date === 'Active'
+          ? '#10b981'
+          : entry.date === 'Inactive'
+          ? '#ef4444'
+          : '#6366f1'
+      }
+    />
+  ))}
+</Bar>
+            </BarChart>
+          </ResponsiveContainer>
+
+          <List className="mt-4">
+            {panel.details.map((item) => (
+              <ListItem key={item.name}>
+                <div className="flex items-center space-x-2">
+                  <span
+                    className={`${item.color} h-2 w-3 rounded-full`}
+                    aria-hidden={true}
+                  />
+                  <span className="text-sm text-gray-600">{item.name}</span>
+                </div>
+                <span className="font-medium text-gray-800">{item.value}</span>
+              </ListItem>
+            ))}
+          </List>
+        </TabPanel>
+      ))}
+    </TabPanels>
+  </TabGroup>
+</Card>
         </div>
 
         {/* Recent Applications and Audit Logs */}

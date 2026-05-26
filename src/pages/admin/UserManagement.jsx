@@ -43,6 +43,9 @@ const UserManagement = () => {
   const [saving, setSaving] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const usersPerPage = 10;
+
   const fetchUsers = async () => {
     try {
       const res = await getAllUsers();
@@ -63,6 +66,12 @@ const UserManagement = () => {
       .toLowerCase()
       .includes(search.toLowerCase())
   );
+
+  const totalPages = Math.ceil(filtered.length / usersPerPage);
+const paginatedUsers = filtered.slice(
+  (currentPage - 1) * usersPerPage,
+  currentPage * usersPerPage
+);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -190,7 +199,10 @@ const UserManagement = () => {
             type="text"
             placeholder="Search by name or email..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+  setSearch(e.target.value);
+  setCurrentPage(1);
+}}
             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
           />
         </div>
@@ -213,12 +225,14 @@ const UserManagement = () => {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((user, index) => (
+                {paginatedUsers.map((user, index) => (
                   <tr
                     key={user.id}
                     className="border-t dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
                   >
-                    <td className="px-6 py-4 text-gray-500">{index + 1}</td>
+                    <td className="px-6 py-4 text-gray-500">
+  {(currentPage - 1) * usersPerPage + index + 1}
+</td>
                     <td className="px-6 py-4 font-medium text-gray-800 dark:text-white">
                       {user.firstName} {user.lastName}
                     </td>
@@ -280,6 +294,45 @@ const UserManagement = () => {
                 ))}
               </tbody>
             </table>
+             {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between px-6 py-4 border-t dark:border-gray-700">
+              <p className="text-sm text-gray-500">
+                Showing {(currentPage - 1) * usersPerPage + 1} to{" "}
+                {Math.min(currentPage * usersPerPage, filtered.length)} of{" "}
+                {filtered.length} users
+              </p>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-lg disabled:opacity-50 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                >
+                  Previous
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`px-3 py-1 text-sm rounded-lg transition ${
+                      currentPage === page
+                        ? "bg-indigo-600 text-white"
+                        : "border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-lg disabled:opacity-50 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
           </div>
         )}
       </div>

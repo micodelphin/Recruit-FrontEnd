@@ -1,3 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Force Tremor light mode */
+.tremor-Card-root {
+  background-color: white !important;
+  color: #1f2937 !important;
+}

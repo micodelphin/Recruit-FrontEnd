@@ -1,19 +1,24 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FaMoon, FaSun } from "react-icons/fa";
 import { HiOutlineMail, HiPaperAirplane } from "react-icons/hi";
 import { forgotPassword } from "../../services/api";
 import toast from "react-hot-toast";
 
 const ForgotPassword = () => {
-  const [darkMode, setDarkMode] = useState(false);
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", darkMode);
-  }, [darkMode]);
+const [darkMode, setDarkMode] = useState(() => {
+  return localStorage.getItem('darkMode') === 'true';
+});
+
+useEffect(() => {
+  document.documentElement.classList.toggle('dark', darkMode);
+  localStorage.setItem('darkMode', darkMode);
+}, [darkMode]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -24,8 +29,8 @@ const ForgotPassword = () => {
     setLoading(true);
     try {
       await forgotPassword({ email });
-      setSent(true);
-      toast.success("Reset link sent! Check your inbox.");
+      toast.success("Email verified! Redirecting...");
+      setTimeout(() => navigate('/reset-password', { state: { email: email } }), 1500);
     } catch (err) {
       toast.error(err?.response?.data?.message || "Failed to send reset link");
     } finally {
@@ -42,7 +47,11 @@ const ForgotPassword = () => {
         onClick={() => setDarkMode(!darkMode)}
         className="absolute top-5 right-5 p-3 rounded-full bg-white dark:bg-gray-800 shadow z-20"
       >
-        {darkMode ? <FaSun className="text-yellow-400" /> : <FaMoon className="text-gray-700" />}
+        {darkMode ? (
+          <FaSun className="text-yellow-400" />
+        ) : (
+          <FaMoon className="text-gray-700" />
+        )}
       </button>
 
       <div className="relative w-full max-w-5xl flex items-center justify-center z-10">
@@ -55,7 +64,7 @@ const ForgotPassword = () => {
             Forgot password?
           </h2>
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-8">
-            Enter the email tied to your account and we'll send you a reset link.
+            Enter the email tied to your account.
           </p>
 
           <div className="flex items-center bg-white dark:bg-gray-700 border-l-4 border-blue-600 rounded-md shadow px-4 py-3 mb-6">
@@ -76,12 +85,14 @@ const ForgotPassword = () => {
             className="flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-10 rounded-md shadow-lg transition disabled:opacity-60"
           >
             <HiPaperAirplane className="text-xl rotate-90" />
-            {sent ? "LINK SENT" : loading ? "SENDING..." : "SEND LINK"}
+            {sent ? "LINK SENT" : loading ? "SENDING..." : "RESET"}
           </button>
 
           <p className="mt-6 text-sm text-gray-600 dark:text-gray-400">
             Remembered it?{" "}
-            <Link to="/login" className="text-blue-600 font-semibold underline">Back to login</Link>
+            <Link to="/login" className="text-blue-600 font-semibold underline">
+              Back to login
+            </Link>
           </p>
         </form>
 
@@ -92,7 +103,9 @@ const ForgotPassword = () => {
           <div className="absolute top-1/2 left-1/3 w-40 h-40 rounded-full bg-blue-500 opacity-30 blur-2xl" />
 
           <div className="relative z-10 text-center text-white px-8">
-            <h2 className="text-4xl font-extrabold tracking-wide mb-4">NO WORRIES!</h2>
+            <h2 className="text-4xl font-extrabold tracking-wide mb-4">
+              NO WORRIES!
+            </h2>
             <p className="text-sm mb-8 opacity-90">
               We'll help you get back into your account safely.
             </p>

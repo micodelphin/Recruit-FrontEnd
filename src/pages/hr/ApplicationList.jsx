@@ -178,7 +178,7 @@ const ApplicationList = () => {
             </table>
 
             {/* Pagination */}
-            {totalPages > 1 && (
+            {filteredApplications.length > 0 && (
               <div className="flex items-center justify-between px-6 py-4 border-t dark:border-gray-700">
 
                 <p className="text-sm text-gray-500">

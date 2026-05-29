@@ -15,8 +15,6 @@ import toast from "react-hot-toast";
 const Register = () => {
   const navigate = useNavigate();
   const { loginUser } = useAuth();
-
-  const [darkMode, setDarkMode] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -29,14 +27,14 @@ const Register = () => {
   });
   const [errors, setErrors] = useState({});
 
-  // Apply dark mode to html element
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  }, [darkMode]);
+const [darkMode, setDarkMode] = useState(() => {
+  return localStorage.getItem('darkMode') === 'true';
+});
+
+useEffect(() => {
+  document.documentElement.classList.toggle('dark', darkMode);
+  localStorage.setItem('darkMode', darkMode);
+}, [darkMode]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

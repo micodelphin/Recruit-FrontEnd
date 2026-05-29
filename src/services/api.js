@@ -18,7 +18,7 @@ export const login = (data) => API.post('/auth/login', data);
 export const register = (data) => API.post('/auth/register', data);
 export const getMe = () => API.get('/auth/me');
 export const forgotPassword = (data) => API.post("/auth/forgot-password", data);
-
+export const resetPassword = (data) => API.post('/auth/reset-password', data);
 
 // NIDA & NESA
 export const getNIDAProfile = (nationalId) => API.get(`/nida/${nationalId}`);
@@ -37,6 +37,7 @@ export const getUserById = (id) => API.get(`/users/${id}`);
 export const createUser = (data) => API.post('/users', data);
 export const updateUser = (id, data) => API.patch(`/users/${id}`, data);
 export const toggleUserStatus = (id) => API.patch(`/users/${id}/toggle-status`);
+export const resetUserPassword = (id, data) => API.patch(`/users/${id}/reset-password`, data);
 export const deleteUser = (id) => API.delete(`/users/${id}`);
 
 // Dashboard

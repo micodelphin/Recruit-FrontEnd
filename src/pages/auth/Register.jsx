@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { FaMoon, FaSun, FaEye, FaEyeSlash } from "react-icons/fa";
+import {
+  HiOutlineMail,
+  HiOutlineKey,
+  HiOutlineUser,
+  HiOutlinePhone,
+  HiUserAdd,
+} from "react-icons/hi";
 import { useAuth } from "../../context/authContex";
 import { register } from "../../services/api";
 import toast from "react-hot-toast";
@@ -100,150 +107,137 @@ const Register = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
-      {/* Dark mode toggle */}
-      <div className="absolute top-4 right-4">
-        <button
-          onClick={() => setDarkMode(!darkMode)}
-          className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-yellow-400"
-        >
-          {darkMode ? <FaSun /> : <FaMoon />}
-        </button>
-      </div>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 p-4 relative overflow-hidden">
+      <div className="absolute -top-20 -left-20 w-72 h-72 rounded-full bg-gradient-to-br from-indigo-500 to-blue-600 opacity-80" />
+      <div className="absolute -bottom-20 -right-20 w-72 h-72 rounded-full bg-gradient-to-br from-blue-500 to-indigo-700 opacity-80" />
 
-      <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-lg shadow-md p-8">
-        {/* Title */}
-        <h2 className="text-center text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-6">
-          Create your account
-        </h2>
+      <button
+        onClick={() => setDarkMode(!darkMode)}
+        className="absolute top-5 right-5 p-3 rounded-full bg-white dark:bg-gray-800 shadow z-20"
+      >
+        {darkMode ? (
+          <FaSun className="text-yellow-400" />
+        ) : (
+          <FaMoon className="text-gray-700" />
+        )}
+      </button>
 
-        <form className="space-y-5" onSubmit={handleSubmit} autoComplete="off">
-          {/* First Name and Last Name side by side */}
-          <div className="flex space-x-3">
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                First Name
-              </label>
-              <input
-                type="text"
-                name="firstName"
-                value={formData.firstName}
-                onChange={handleChange}
-                className={`mt-1 w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100 ${
-                  errors.firstName
-                    ? "border-red-500"
-                    : "border-gray-300 dark:border-gray-600"
-                }`}
-                placeholder="First name"
-              />
-              {errors.firstName && (
-                <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>
-              )}
-            </div>
+      <div className="relative w-full max-w-5xl flex items-center justify-center z-10">
+        {/* Left: Welcome panel (swapped sides for visual variation) */}
+        <div className="hidden md:flex relative w-[45%] h-[600px] rounded-xl shadow-2xl overflow-hidden bg-gradient-to-br from-blue-700 via-blue-600 to-blue-800 items-center justify-center -mr-10">
+          <div className="absolute top-10 -left-10 w-60 h-60 rounded-full bg-blue-400 opacity-30 blur-2xl" />
+          <div className="absolute bottom-0 right-0 w-72 h-72 rounded-full bg-blue-300 opacity-20 blur-3xl" />
+          <div className="absolute top-1/2 left-1/3 w-40 h-40 rounded-full bg-blue-500 opacity-30 blur-2xl" />
 
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Last Name
-              </label>
-              <input
-                type="text"
-                name="lastName"
-                value={formData.lastName}
-                onChange={handleChange}
-                className={`mt-1 w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100 ${
-                  errors.lastName
-                    ? "border-red-500"
-                    : "border-gray-300 dark:border-gray-600"
-                }`}
-                placeholder="Last name"
-              />
-              {errors.lastName && (
-                <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>
-              )}
-            </div>
+          <div className="relative z-10 text-center text-white px-8">
+            <h2 className="text-4xl font-extrabold tracking-wide mb-4">
+              HELLO!
+            </h2>
+            <p className="text-sm mb-8 opacity-90">
+              Already have an account? Sign in to continue
+            </p>
+            <Link
+              to="/login"
+              className="inline-block px-12 py-3 rounded-md bg-blue-700/60 hover:bg-blue-700 border border-blue-300/40 text-white font-bold tracking-wider shadow-lg transition"
+            >
+              LOGIN
+            </Link>
           </div>
+        </div>
 
-          {/* Email */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Email address
-            </label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              autoComplete="off"
-              className={`mt-1 w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100 ${
-                errors.email
-                  ? "border-red-500"
-                  : "border-gray-300 dark:border-gray-600"
-              }`}
-              placeholder="Enter your email"
-            />
+        {/* Right: Register card */}
+        <form
+          onSubmit={handleSubmit}
+          className="relative z-20 bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-10 md:p-12 w-full md:w-[60%]"
+        >
+          <h2 className="text-3xl font-extrabold text-gray-800 dark:text-white mb-8 inline-block border-b-2 border-gray-800 dark:border-white pb-1">
+            Create account
+          </h2>
+
+          <div className="space-y-4">
+            <div className="flex space-x-3">
+              <div className="flex items-center bg-white dark:bg-gray-700 border-l-4 border-blue-600 rounded-md shadow px-4 py-3">
+                <HiOutlineUser className="text-gray-400 text-xl mr-3" />
+                <span className="text-gray-300 mr-3">|</span>
+                <input
+                  type="text"
+                  name="firstName"
+                  placeholder="First name"
+                  value={formData.firstName}
+                  onChange={(e) =>
+                    setFormData({ ...formData, firstName: e.target.value })
+                  }
+                  className="flex-1 bg-transparent outline-none text-gray-700 dark:text-white placeholder-gray-400"
+                />
+              </div>
+
+              <div className="flex items-center bg-white dark:bg-gray-700 border-l-4 border-blue-600 rounded-md shadow px-4 py-3">
+                <HiOutlineUser className="text-gray-400 text-xl mr-3" />
+                <span className="text-gray-300 mr-3">|</span>
+                <input
+                  type="text"
+                  name="lastName"
+                  placeholder="Last name"
+                  value={formData.lastName}
+                  onChange={(e) =>
+                    setFormData({ ...formData, lastName: e.target.value })
+                  }
+                  className="flex-1 bg-transparent outline-none text-gray-700 dark:text-white placeholder-gray-400"
+                />
+              </div>
+            </div>
+
+            {/* Email */}
+            <div className="flex items-center bg-white dark:bg-gray-700 border-l-4 border-blue-600 rounded-md shadow px-4 py-3">
+              <HiOutlineUser className="text-gray-400 text-xl mr-3" />
+              <span className="text-gray-300 mr-3">|</span>
+              <input
+                type="text"
+                name="email"
+                placeholder="email"
+                value={formData.email}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
+                className="flex-1 bg-transparent outline-none text-gray-700 dark:text-white placeholder-gray-400"
+              />
+            </div>
+
             {errors.email && (
               <p className="text-red-500 text-xs mt-1">{errors.email}</p>
             )}
-          </div>
 
-          {/* Password */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Password
-            </label>
-            <div className="relative">
+            {/* Password */}
+            <div className="flex items-center bg-white dark:bg-gray-700 border-l-4 border-blue-600 rounded-md shadow px-4 py-3">
+              <HiOutlineKey className="text-gray-400 text-xl mr-3" />
+              <span className="text-gray-300 mr-3">|</span>
               <input
                 type={showPassword ? "text" : "password"}
-                name="password"
+                placeholder="Password"
                 value={formData.password}
-                onChange={handleChange}
-                autoComplete="new-password"
-                className={`mt-1 w-full border rounded-md px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100 ${
-                  errors.password
-                    ? "border-red-500"
-                    : "border-gray-300 dark:border-gray-600"
-                }`}
-                placeholder="Enter your password"
+                onChange={(e) =>
+                  setFormData({ ...formData, password: e.target.value })
+                }
+                className="flex-1 bg-transparent outline-none text-gray-700 dark:text-white placeholder-gray-400"
               />
-              {/* <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-3 text-gray-500 dark:text-gray-400"
-              >
-                {showPassword ? <FaEyeSlash /> : <FaEye />}
-              </button> */}
             </div>
             {errors.password && (
               <p className="text-red-500 text-xs mt-1">{errors.password}</p>
             )}
-          </div>
 
-          {/* Confirm Password */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Confirm Password
-            </label>
-            <div className="relative">
+            {/* Confirm Password */}
+            <div className="flex items-center bg-white dark:bg-gray-700 border-l-4 border-blue-600 rounded-md shadow px-4 py-3">
+              <HiOutlineKey className="text-gray-400 text-xl mr-3" />
+              <span className="text-gray-300 mr-3">|</span>
               <input
-                type={showConfirmPassword ? "text" : "password"}
-                name="confirmPassword"
+                type="password"
+                placeholder="Confirm password"
                 value={formData.confirmPassword}
-                onChange={handleChange}
-                autoComplete="new-password"
-                className={`mt-1 w-full border rounded-md px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100 ${
-                  errors.confirmPassword
-                    ? "border-red-500"
-                    : "border-gray-300 dark:border-gray-600"
-                }`}
-                placeholder="Confirm your password"
+                onChange={(e) =>
+                  setFormData({ ...formData, confirmPassword: e.target.value })
+                }
+                className="flex-1 bg-transparent outline-none text-gray-700 dark:text-white placeholder-gray-400"
               />
-              {/* <button
-                type="button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-3 text-gray-500 dark:text-gray-400"
-              >
-                {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
-              </button> */}
             </div>
             {errors.confirmPassword && (
               <p className="text-red-500 text-xs mt-1">
@@ -252,23 +246,15 @@ const Register = () => {
             )}
           </div>
 
-          {/* Submit button */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-indigo-600 text-white py-2 rounded-md hover:bg-indigo-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
+            className="mt-8 flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-10 rounded-md shadow-lg transition disabled:opacity-60"
           >
-            {loading ? "Creating account..." : "Register"}
+            <HiUserAdd className="text-xl" />
+            {loading ? "Creating..." : "SIGN UP"}
           </button>
         </form>
-
-        {/* Footer */}
-        <p className="text-center text-sm text-gray-600 dark:text-gray-400 mt-6">
-          Already have an account?{" "}
-          <a href="/login" className="text-indigo-600 hover:underline">
-            Sign in here
-          </a>
-        </p>
       </div>
     </div>
   );

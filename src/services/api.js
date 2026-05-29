@@ -17,6 +17,8 @@ API.interceptors.request.use((config) => {
 export const login = (data) => API.post('/auth/login', data);
 export const register = (data) => API.post('/auth/register', data);
 export const getMe = () => API.get('/auth/me');
+export const forgotPassword = (data) => API.post("/auth/forgot-password", data);
+
 
 // NIDA & NESA
 export const getNIDAProfile = (nationalId) => API.get(`/nida/${nationalId}`);

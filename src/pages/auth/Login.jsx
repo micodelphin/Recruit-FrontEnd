@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { FaMoon, FaSun, FaEye, FaEyeSlash } from "react-icons/fa";
+import { HiOutlineMail, HiOutlineKey, HiLogin } from "react-icons/hi";
 import { useAuth } from "../../context/authContex";
-import { login,getMyApplication } from "../../services/api";
+import { login, getMyApplication } from "../../services/api";
 import toast from "react-hot-toast";
-
 
 const Login = () => {
   const navigate = useNavigate();
@@ -35,20 +35,24 @@ const Login = () => {
     }
   }, [user]);
 
- const redirectByRole = async (role) => {
-  if (role === "APPLICANT") {
-    try {
-      await getMyApplication();
-      navigate("/my-application");
-    } catch (error) {
-      navigate("/apply");
+  const redirectByRole = async (role) => {
+    if (role === "APPLICANT") {
+      try {
+        await getMyApplication();
+        navigate("/my-application");
+      } catch (error) {
+        navigate("/apply");
+      }
+    } else if (role === "HR") {
+      navigate("/hr/dashboard");
+    } else if (role === "SUPER_ADMIN") {
+      navigate("/admin/dashboard");
     }
-  } else if (role === "HR") {
-    navigate("/hr/dashboard");
-  } else if (role === "SUPER_ADMIN") {
-    navigate("/admin/dashboard");
-  }
-};
+  };
+
+  // useEffect(() => {
+  //   if (user) redirectByRole(user);
+  // }, [user]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -98,27 +102,37 @@ const Login = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 p-4 relative overflow-hidden">
+      {/* Decorative blobs */}
+      <div className="absolute -top-20 -left-20 w-72 h-72 rounded-full bg-gradient-to-br from-indigo-500 to-blue-600 opacity-80" />
+      <div className="absolute -bottom-20 -right-20 w-72 h-72 rounded-full bg-gradient-to-br from-blue-500 to-indigo-700 opacity-80" />
+
       {/* Dark mode toggle */}
-      <div className="absolute top-4 right-4">
-        <button
-          onClick={() => setDarkMode(!darkMode)}
-          className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-yellow-400"
+      <button
+        onClick={() => setDarkMode(!darkMode)}
+        className="absolute top-5 right-5 p-3 rounded-full bg-white dark:bg-gray-800 shadow z-20"
+      >
+        {darkMode ? (
+          <FaSun className="text-yellow-400" />
+        ) : (
+          <FaMoon className="text-gray-700" />
+        )}
+      </button>
+
+      {/* Wrapper with offset cards */}
+      <div className="relative w-full max-w-5xl flex items-center justify-center z-10">
+        {/* Left: Login card */}
+        <form
+          onSubmit={handleSubmit}
+          className="relative z-20 bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-10 md:p-12 w-full md:w-[55%] md:-mr-10 md:mt-0 -mt-6"
         >
-          {darkMode ? <FaSun /> : <FaMoon />}
-        </button>
-      </div>
+          <h2 className="text-3xl font-extrabold text-gray-800 dark:text-white mb-10 inline-block border-b-2 border-gray-800 dark:border-white pb-1">
+            Login please
+          </h2>
 
-      <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-lg shadow-md p-8">
-        {/* Title */}
-        <h2 className="text-center text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-6">
-          Sign in to your account
-        </h2>
-
-        {/* Form */}
-        <form className="space-y-5" onSubmit={handleSubmit}>
           {/* Email */}
-          <div>
+          {/* Email */}
+          <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Email address
             </label>
@@ -142,9 +156,10 @@ const Login = () => {
 
           {/* Password */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 tracking-wide">
               Password
             </label>
+
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
@@ -159,55 +174,56 @@ const Login = () => {
                 }`}
                 placeholder="Enter your password"
               />
-              {/* <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-3 text-gray-500 dark:text-gray-400"
-              >
-                {showPassword ? <FaEyeSlash /> : <FaEye />}
-              </button> */}
             </div>
             {errors.password && (
               <p className="text-red-500 text-xs mt-1">{errors.password}</p>
             )}
           </div>
 
-          {/* Submit button */}
+          {/* Remember + Forgot */}
+          <div className="flex items-center justify-between mb-8">
+            <label className="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm cursor-pointer"></label>
+            <Link
+              to="/forgot-password"
+              className="text-sm font-semibold text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors underline underline-offset-2"
+            >
+              Forgot Password?
+            </Link>
+          </div>
+
+          {/* Submit */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-indigo-600 text-white py-2 rounded-md hover:bg-indigo-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
+            className="flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-10 rounded-md shadow-lg transition disabled:opacity-60"
           >
-            {loading ? "Signing in..." : "Sign in"}
+            <HiLogin className="text-xl" />
+            {loading ? "Signing in..." : "LOG IN"}
           </button>
         </form>
 
-        {/* Divider
-        <div className="flex items-center my-6">
-          <hr className="flex-grow border-gray-300 dark:border-gray-600" />
-          <span className="mx-2 text-gray-500 dark:text-gray-400 text-sm">
-            Or continue with
-          </span>
-          <hr className="flex-grow border-gray-300 dark:border-gray-600" />
-        </div> */}
+        {/* Right: Welcome panel */}
+        <div className="hidden md:flex relative w-[45%] h-[520px] rounded-xl shadow-2xl overflow-hidden bg-gradient-to-br from-blue-700 via-blue-600 to-blue-800 items-center justify-center">
+          {/* Blob shapes */}
+          <div className="absolute top-10 -left-10 w-60 h-60 rounded-full bg-blue-400 opacity-30 blur-2xl" />
+          <div className="absolute bottom-0 right-0 w-72 h-72 rounded-full bg-blue-300 opacity-20 blur-3xl" />
+          <div className="absolute top-1/2 left-1/3 w-40 h-40 rounded-full bg-blue-500 opacity-30 blur-2xl" />
 
-        {/* Google Button
-        <button className="w-full border border-gray-300 dark:border-gray-600 rounded-md py-2 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700">
-          <img
-            src="https://www.svgrepo.com/show/355037/google.svg"
-            alt="Google"
-            className="w-5 h-5 mr-2"
-          />
-          <span className="text-gray-700 dark:text-gray-300">Google</span>
-        </button> */}
-
-        {/* Footer */}
-        <p className="text-center text-sm text-gray-600 dark:text-gray-400 mt-6">
-          Not a member?{" "}
-          <a href="/register" className="text-indigo-600 hover:underline">
-            Register here
-          </a>
-        </p>
+          <div className="relative z-10 text-center text-white px-8">
+            <h2 className="text-4xl font-extrabold tracking-wide mb-4">
+              WELCOME!
+            </h2>
+            <p className="text-sm mb-8 opacity-90">
+              Enter your details and Send your application
+            </p>
+            <Link
+              to="/register"
+              className="inline-block px-12 py-3 rounded-md bg-blue-700/60 hover:bg-blue-700 border border-blue-300/40 text-white font-bold tracking-wider shadow-lg transition"
+            >
+              SIGNUP
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );

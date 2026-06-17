@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getMyApplication } from "../../services/api";
+import { getMyApplication, getNESARecord } from "../../services/api";
 import { useAuth } from "../../context/authContex";
 import toast from "react-hot-toast";
-
 
 const statusConfig = {
   PENDING: {
     label: "Pending",
     color: "bg-yellow-100 text-yellow-700 border-yellow-300",
     icon: "⏳",
-    message: "Your application has been received and is waiting to be reviewed.",
+    message:
+      "Your application has been received and is waiting to be reviewed.",
   },
   UNDER_REVIEW: {
     label: "Under Review",
@@ -36,6 +36,7 @@ const ApplicationStatus = () => {
   const navigate = useNavigate();
   const { user, logoutUser } = useAuth();
   const [application, setApplication] = useState(null);
+  const [nesaData, setNesaData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -69,7 +70,6 @@ const ApplicationStatus = () => {
       </div>
     );
   }
-  
 
   const status = application?.status;
   const config = statusConfig[status] || statusConfig.PENDING;
@@ -77,7 +77,6 @@ const ApplicationStatus = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-10 px-4">
       <div className="max-w-2xl mx-auto">
-
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
@@ -101,9 +100,7 @@ const ApplicationStatus = () => {
           <div className="flex items-center space-x-3 mb-2">
             <span className="text-3xl">{config.icon}</span>
             <div>
-              <p className="font-semibold text-lg">
-                Status: {config.label}
-              </p>
+              <p className="font-semibold text-lg">Status: {config.label}</p>
               <p className="text-sm">{config.message}</p>
             </div>
           </div>
@@ -132,42 +129,45 @@ const ApplicationStatus = () => {
             Personal Information
           </h2>
           <div className="grid grid-cols-2 gap-4 text-sm text-gray-700 dark:text-gray-300">
-  <div>
-    <p className="font-medium text-gray-500">Full Name</p>
-    <p>{application?.firstName} {application?.lastName}</p>
-  </div>
-  <div>
-    <p className="font-medium text-gray-500">National ID</p>
-    <p>{application?.nationalId}</p>
-  </div>
-  <div>
-    <p className="font-medium text-gray-500">Gender</p>
-    <p>{application?.gender}</p>
-  </div>
-  <div>
-    <p className="font-medium text-gray-500">Date of Birth</p>
-    <p>{application?.dateOfBirth
-      ? new Date(application.dateOfBirth).toLocaleDateString()
-      : "N/A"}
-    </p>
-  </div>
-  <div>
-    <p className="font-medium text-gray-500">Phone</p>
-    <p>{application?.phone || "N/A"}</p>
-  </div>
-  <div>
-    <p className="font-medium text-gray-500">Address</p>
-    <p>{application?.address || "N/A"}</p>
-  </div>
-  <div>
-    <p className="font-medium text-gray-500">Province</p>
-    <p>{application?.province || "N/A"}</p>
-  </div>
-  <div>
-    <p className="font-medium text-gray-500">District</p>
-    <p>{application?.district || "N/A"}</p>
-  </div>
-</div>
+            <div>
+              <p className="font-medium text-gray-500">Full Name</p>
+              <p>
+                {application?.firstName} {application?.lastName}
+              </p>
+            </div>
+            <div>
+              <p className="font-medium text-gray-500">National ID</p>
+              <p>{application?.nationalId}</p>
+            </div>
+            <div>
+              <p className="font-medium text-gray-500">Gender</p>
+              <p>{application?.gender}</p>
+            </div>
+            <div>
+              <p className="font-medium text-gray-500">Date of Birth</p>
+              <p>
+                {application?.dateOfBirth
+                  ? new Date(application.dateOfBirth).toLocaleDateString()
+                  : "N/A"}
+              </p>
+            </div>
+            <div>
+              <p className="font-medium text-gray-500">Phone</p>
+              <p>{application?.phone || "N/A"}</p>
+            </div>
+            <div>
+              <p className="font-medium text-gray-500">Address</p>
+              <p>{application?.address || "N/A"}</p>
+            </div>
+            <div>
+              <p className="font-medium text-gray-500">Province</p>
+              <p>{application?.province || "N/A"}</p>
+            </div>
+            <div>
+              <p className="font-medium text-gray-500">District</p>
+              <p>{application?.district || "N/A"}</p>
+            </div>
+          </div>
         </div>
 
         {/* Academic Info */}
@@ -175,21 +175,17 @@ const ApplicationStatus = () => {
           <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
             Academic Information
           </h2>
-          {/* <div className="mb-4">
-    <span className={`px-3 py-1 rounded-full text-sm font-bold ${
-      application?.nesaResult === 'PASS'
-        ? 'bg-green-100 text-green-700'
-        : application?.nesaResult === 'FAIL'
-        ? 'bg-red-100 text-red-700'
-        : 'bg-gray-100 text-gray-500'
-    }`}>
-      {application?.nesaResult === 'PASS'
-        ? '✅ PASS'
-        : application?.nesaResult === 'FAIL'
-        ? '❌ FAIL'
-        : 'N/A'}
-    </span>
-  </div> */}
+          <div className="mb-3">
+            <span
+              className={`px-3 py-1 rounded-full text-sm font-bold ${
+                application?.nesaResult === "PASS"
+                  ? "bg-green-100 text-green-700"
+                  : "bg-red-100 text-red-700"
+              }`}
+            >
+              {application?.nesaResult === "PASS" ? "✅ PASS" : "❌ FAIL"}
+            </span>
+          </div>
           <div className="grid grid-cols-2 gap-4 text-sm text-gray-700 dark:text-gray-300">
             <div>
               <p className="font-medium text-gray-500">School</p>
@@ -242,7 +238,6 @@ const ApplicationStatus = () => {
             {new Date(application?.createdAt).toLocaleDateString()}
           </p>
         </div>
-
       </div>
     </div>
   );

@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Sidebar from "../../components/shared/Sidebar";
-import { getApplicationById, reviewApplication } from "../../services/api";
+import {
+  getApplicationById,
+  reviewApplication,
+  getNIDAProfile,
+  getNESARecord,
+  submitApplication,
+} from "../../services/api";
 import {
   FaFileAlt,
   FaSearch,
@@ -30,6 +36,7 @@ const ApplicationDetail = () => {
   const [cvLoading, setCvLoading] = useState(false);
 
   const [application, setApplication] = useState(null);
+  const [nesaData, setNesaData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [reviewing, setReviewing] = useState(false);
   const [reviewComment, setReviewComment] = useState("");
@@ -54,79 +61,88 @@ const ApplicationDetail = () => {
   }, [id]);
 
   useEffect(() => {
-  return () => {
-    if (cvUrl) {
-      URL.revokeObjectURL(cvUrl);
-    }
-  };
-}, [cvUrl]);
-
-  const handleReview = async () => {
-    setCommentError("");
-    if (selectedStatus === "REJECTED" && !reviewComment.trim()) {
-      setCommentError("A reason is required when rejecting an application.");
-      return;
-    }
-    setReviewing(true);
-    try {
-      await reviewApplication(id, { status: selectedStatus, reviewComment });
-      toast.success(
-        `Application ${selectedStatus.toLowerCase().replace("_", " ")} successfully.`,
-      );
-      navigate("/hr/applications");
-    } catch (error) {
-      toast.error(
-        error.response?.data?.message || "Error reviewing application.",
-      );
-    } finally {
-      setReviewing(false);
-    }
-  };
-
-  const openReview = (status) => {
-    setSelectedStatus(status);
-    setReviewComment("");
-    setCommentError("");
-    setShowReviewBox(true);
-  };
-
-  const handleViewCV = async () => {
-  if (cvUrl) {
-    setShowCV(true);
-    return;
-  }
-
-  setCvLoading(true);
-
-  try {
-    const token = localStorage.getItem("token");
-
-    const response = await fetch(
-      `http://localhost:8000/api/applications/${id}/cv`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+    return () => {
+      if (cvUrl) {
+        URL.revokeObjectURL(cvUrl);
       }
+    };
+  }, [cvUrl]);
+
+  const submitReview = async (status, comment) => {
+  setReviewing(true);
+  try {
+    await reviewApplication(id, { status, reviewComment: comment });
+    toast.success(
+      `Application ${status.toLowerCase().replace("_", " ")} successfully.`,
     );
-
-    if (!response.ok) {
-      toast.error("Error loading CV.");
-      return;
-    }
-
-    const blob = await response.blob();
-    const url = URL.createObjectURL(blob);
-
-    setCvUrl(url);
-    setShowCV(true);
+    navigate("/hr/applications");
   } catch (error) {
-    console.error(error);
-    toast.error("Error loading CV.");
+    toast.error(
+      error.response?.data?.message || "Error reviewing application.",
+    );
   } finally {
-    setCvLoading(false);
+    setReviewing(false);
   }
 };
+
+const handleReview = async () => {
+  setCommentError("");
+  if (selectedStatus === "REJECTED" && !reviewComment.trim()) {
+    setCommentError("A reason is required when rejecting an application.");
+    return;
+  }
+  submitReview(selectedStatus, reviewComment);
+};
+
+ const openReview = (status) => {
+  setSelectedStatus(status);
+  setReviewComment("");
+  setCommentError("");
+
+  if (status === "REJECTED") {
+    setShowReviewBox(true);
+  } else {
+    submitReview(status, "");
+  }
+};
+
+  const handleViewCV = async () => {
+    if (cvUrl) {
+      setShowCV(true);
+      return;
+    }
+
+    setCvLoading(true);
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(
+        `http://localhost:8000/api/applications/${id}/cv`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      if (!response.ok) {
+        toast.error("Error loading CV.");
+        return;
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+
+      setCvUrl(url);
+      setShowCV(true);
+    } catch (error) {
+      console.error(error);
+      toast.error("Error loading CV.");
+    } finally {
+      setCvLoading(false);
+    }
+  };
 
   const handleDownloadCV = async () => {
     try {
@@ -257,23 +273,23 @@ const ApplicationDetail = () => {
               <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
                 Academic Information
               </h2>
+
               <div className="mb-3">
-                <span
-                  className={`px-3 py-1 rounded-full text-sm font-bold ${
-                    application?.nesaResult === "PASS"
-                      ? "bg-green-100 text-green-700"
-                      : application?.nesaResult === "FAIL"
-                        ? "bg-red-100 text-red-700"
-                        : "bg-gray-100 text-gray-500"
-                  }`}
-                >
-                  {application?.nesaResult === "PASS"
-                    ? "✅ PASS"
-                    : application?.nesaResult === "FAIL"
-                      ? "❌ FAIL"
-                      : "N/A"}
-                </span>
+                {application?.nesaResult === "PASS" ? (
+                  <span className="px-3 py-1 rounded-full text-sm font-bold bg-green-100 text-green-700">
+                    ✅ PASS
+                  </span>
+                ) : application?.nesaResult === "FAIL" ? (
+                  <span className="px-3 py-1 rounded-full text-sm font-bold bg-red-100 text-red-700">
+                    ❌ FAIL
+                  </span>
+                ) : (
+                  <span className="px-3 py-1 rounded-full text-sm font-bold bg-gray-100 text-gray-600">
+                    ⚠️ Not Available
+                  </span>
+                )}
               </div>
+
               <div className="grid grid-cols-2 gap-4 text-sm mb-4">
                 <div>
                   <p className="text-gray-500">School</p>
@@ -461,10 +477,10 @@ const ApplicationDetail = () => {
             </div>
             <div className="flex-1 p-4">
               <iframe
-  src={cvUrl || `http://localhost:8000/api/applications/${id}/cv`}
-  className="w-full h-full rounded-lg"
-  title="CV Preview"
-/>
+                src={cvUrl || `http://localhost:8000/api/applications/${id}/cv`}
+                className="w-full h-full rounded-lg"
+                title="CV Preview"
+              />
             </div>
           </div>
         </div>

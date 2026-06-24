@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/authContex";
-import { getNIDAProfile, getNESARecord, submitApplication } from "../../services/api";
+import {
+  getNIDAProfile,
+  getNESARecord,
+  submitApplication,
+} from "../../services/api";
 import toast from "react-hot-toast";
 
 const ApplicationForm = () => {
@@ -16,6 +20,8 @@ const ApplicationForm = () => {
   const [nationalId, setNationalId] = useState("");
   const [nidaData, setNidaData] = useState(null);
   const [nidaError, setNidaError] = useState("");
+  const [profile, setProfile] = useState(null);
+  const [showPhotoPopup, setShowPhotoPopup] = useState(false);
 
   // NESA data
   const [studentId, setStudentId] = useState("");
@@ -26,21 +32,21 @@ const ApplicationForm = () => {
   const [cvFile, setCvFile] = useState(null);
   const [cvError, setCvError] = useState("");
 
-//   // Check if applicant already submitted
-//   useEffect(() => {
-//     const checkExisting = async () => {
-//       try {
-//         const { getMyApplication } = await import("../../services/api");
-//         await getMyApplication();
-//         // If it succeeds they already have an application
-//         toast("You have already submitted an application.");
-//         navigate("/my-application");
-//       } catch (error) {
-//         // 404 means no application yet — good, they can proceed
-//       }
-//     };
-//     checkExisting();
-//   }, []);
+  //   // Check if applicant already submitted
+  //   useEffect(() => {
+  //     const checkExisting = async () => {
+  //       try {
+  //         const { getMyApplication } = await import("../../services/api");
+  //         await getMyApplication();
+  //         // If it succeeds they already have an application
+  //         toast("You have already submitted an application.");
+  //         navigate("/my-application");
+  //       } catch (error) {
+  //         // 404 means no application yet — good, they can proceed
+  //       }
+  //     };
+  //     checkExisting();
+  //   }, []);
 
   // Step 1 — Verify National ID with NIDA
   const handleVerifyNIDA = async () => {
@@ -62,13 +68,26 @@ const ApplicationForm = () => {
       toast.success("Identity verified successfully!");
       setStep(2);
     } catch (error) {
-      const message =
-        error.response?.data?.message || "National ID not found.";
+      const message = error.response?.data?.message || "National ID not found.";
       setNidaError(message);
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await fetch(`http://localhost:8001/api/nida/${nationalId}`);
+        const data = await res.json();
+        setProfile(data.data); // profile now includes photoUrl
+      } catch (err) {
+        console.error("Error fetching profile:", err);
+      }
+    };
+
+    fetchProfile();
+  }, [nationalId]);
 
   // Step 2 — Verify Student ID with NESA
   const handleVerifyNESA = async () => {
@@ -111,27 +130,30 @@ const ApplicationForm = () => {
       // NIDA fields
       formData.append("nationalId", nidaData.nationalId);
       formData.append("firstName", nidaData.fullName.split(" ")[0]);
-      formData.append("lastName", nidaData.fullName.split(" ").slice(1).join(" "));
+      formData.append(
+        "lastName",
+        nidaData.fullName.split(" ").slice(1).join(" "),
+      );
       formData.append("dateOfBirth", nidaData.dob);
       formData.append("gender", nidaData.gender);
       formData.append("phone", nidaData.phone || "");
       formData.append("address", nidaData.address);
       formData.append("province", nidaData.province);
       formData.append("district", nidaData.district);
+      formData.append('photoUrl', nidaData.photoUrl || '');
 
       formData.append("schoolName", nesaData.school);
       formData.append("combination", nesaData.option);
       formData.append("yearOfCompletion", nesaData.yearCompleted);
       formData.append("nesaResult", nesaData.result);
 
-    
       const grades = nesaData.grades;
+
       formData.append("mathematicsGrade", grades.Mathematics || "");
       formData.append("englishGrade", grades.English || "");
       formData.append("physicsGrade", grades.Physics || "");
       formData.append("chemistryGrade", grades.Chemistry || "");
       formData.append("biologyGrade", grades.Biology || "");
-
 
       formData.append("cv", cvFile);
 
@@ -153,10 +175,9 @@ const ApplicationForm = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-10 px-4">
       <div className="max-w-2xl mx-auto">
-
         {/* Header */}
         <h1 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-2">
-           Application
+          Application
         </h1>
         <p className="text-center text-gray-500 dark:text-gray-400 mb-8">
           Complete all steps to submit your application
@@ -173,11 +194,12 @@ const ApplicationForm = () => {
               <div key={index} className="flex-1 flex flex-col items-center">
                 <div
                   className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm border-2 transition-all
-                    ${isCompleted
-                      ? "bg-green-500 border-green-500 text-white"
-                      : isCurrent
-                      ? "bg-indigo-600 border-indigo-600 text-white"
-                      : "bg-white border-gray-300 text-gray-400 dark:bg-gray-800 dark:border-gray-600"
+                    ${
+                      isCompleted
+                        ? "bg-green-500 border-green-500 text-white"
+                        : isCurrent
+                          ? "bg-indigo-600 border-indigo-600 text-white"
+                          : "bg-white border-gray-300 text-gray-400 dark:bg-gray-800 dark:border-gray-600"
                     }`}
                 >
                   {isCompleted ? "✓" : stepNumber}
@@ -187,8 +209,8 @@ const ApplicationForm = () => {
                     isCurrent
                       ? "text-indigo-600 font-semibold"
                       : isCompleted
-                      ? "text-green-500"
-                      : "text-gray-400"
+                        ? "text-green-500"
+                        : "text-gray-400"
                   }`}
                 >
                   {label}
@@ -207,7 +229,6 @@ const ApplicationForm = () => {
 
         {/* Card */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-8">
-
           {/* ── STEP 1: NIDA Verification ── */}
           {step === 1 && (
             <div>
@@ -215,7 +236,8 @@ const ApplicationForm = () => {
                 Step 1 — Verify Your Identity
               </h2>
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-                Enter your 16-digit National ID to fetch your personal information.
+                Enter your 16-digit National ID to fetch your personal
+                information.
               </p>
 
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -265,16 +287,83 @@ const ApplicationForm = () => {
                 <p className="text-sm font-semibold text-green-700 dark:text-green-400 mb-2">
                   ✓ Identity Verified
                 </p>
+                {/* Photo */}
+                <div className="flex justify-center mb-4">
+                  {nidaData?.photoUrl ? (
+                    <img
+                      src={nidaData.photoUrl}
+                      alt="Profile"
+                      className="w-24 h-24 rounded-full border-2 border-green-500 shadow-md object-cover cursor-pointer"
+                      onClick={() => setShowPhotoPopup(true)}
+                    />
+                  ) : (
+                    <div className="w-24 h-24 rounded-full border-2 border-gray-300 flex items-center justify-center text-gray-500">
+                      No Photo
+                    </div>
+                  )}
+
+                  {showPhotoPopup && (
+                    <div
+                      className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50"
+                      onClick={() => setShowPhotoPopup(false)} // close when clicking background
+                    >
+                      <div
+                        className="relative"
+                        onClick={(e) => e.stopPropagation()} // prevent closing when clicking the image itself
+                      >
+                        <img
+                          src={nidaData.photoUrl}
+                          alt="Full Profile"
+                          className="max-h-[80vh] max-w-[80vw] rounded-lg shadow-lg border-4 border-white"
+                        />
+                        <button
+                          onClick={() => setShowPhotoPopup(false)}
+                          className="absolute top-2 right-2 bg-white text-black px-3 py-1 rounded-md shadow hover:bg-gray-200"
+                        >
+                          
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 <div className="grid grid-cols-2 gap-2 text-sm text-gray-700 dark:text-gray-300">
-                  <p><span className="font-medium">Name:</span> {nidaData?.fullName}</p>
-                  <p><span className="font-medium">Gender:</span> {nidaData?.gender}</p>
-                  <p><span className="font-medium">DOB:</span> {nidaData?.dob?.split("T")[0]}</p>
-                  <p><span className="font-medium">Phone:</span> {nidaData?.phone}</p>
-                  <p><span className="font-medium">Father's Name:</span> {nidaData?.fatherName}</p>
-                  <p><span className="font-medium">Mother's Name:</span> {nidaData?.motherName}</p>
-                  <p><span className="font-medium">Province:</span> {nidaData?.province}</p>
-                  <p><span className="font-medium">District:</span> {nidaData?.district}</p>
-                  <p><span className="font-medium">Address:</span> {nidaData?.address}</p>
+                  <p>
+                    <span className="font-medium">Name:</span>{" "}
+                    {nidaData?.fullName}
+                  </p>
+                  <p>
+                    <span className="font-medium">Gender:</span>{" "}
+                    {nidaData?.gender}
+                  </p>
+                  <p>
+                    <span className="font-medium">DOB:</span>{" "}
+                    {nidaData?.dob?.split("T")[0]}
+                  </p>
+                  <p>
+                    <span className="font-medium">Phone:</span>{" "}
+                    {nidaData?.phone}
+                  </p>
+                  <p>
+                    <span className="font-medium">Father's Name:</span>{" "}
+                    {nidaData?.fatherName}
+                  </p>
+                  <p>
+                    <span className="font-medium">Mother's Name:</span>{" "}
+                    {nidaData?.motherName}
+                  </p>
+                  <p>
+                    <span className="font-medium">Province:</span>{" "}
+                    {nidaData?.province}
+                  </p>
+                  <p>
+                    <span className="font-medium">District:</span>{" "}
+                    {nidaData?.district}
+                  </p>
+                  <p>
+                    <span className="font-medium">Address:</span>{" "}
+                    {nidaData?.address}
+                  </p>
                 </div>
               </div>
 
@@ -324,7 +413,8 @@ const ApplicationForm = () => {
                 Step 3 — Upload CV & Submit
               </h2>
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-                Review your information and upload your CV to complete the application.
+                Review your information and upload your CV to complete the
+                application.
               </p>
 
               {/* NIDA Summary */}
@@ -332,63 +422,119 @@ const ApplicationForm = () => {
                 <p className="text-sm font-semibold text-green-700 dark:text-green-400 mb-2">
                   ✓ Personal Information
                 </p>
+                {/* Photo */}
+                <div className="flex justify-center mb-4">
+                  {nidaData?.photoUrl ? (
+                    <img
+                      src={nidaData.photoUrl}
+                      alt="Profile"
+                      className="w-24 h-24 rounded-full border-2 border-green-500 shadow-md object-cover"
+                    />
+                  ) : (
+                    <div className="w-24 h-24 rounded-full border-2 border-gray-300 flex items-center justify-center text-gray-500">
+                      No Photo
+                    </div>
+                  )}
+                </div>
                 <div className="grid grid-cols-2 gap-2 text-sm text-gray-700 dark:text-gray-300">
-                 <p><span className="font-medium">Name:</span> {nidaData?.fullName}</p>
-                  <p><span className="font-medium">Gender:</span> {nidaData?.gender}</p>
-                  <p><span className="font-medium">DOB:</span> {nidaData?.dob?.split("T")[0]}</p>
-                  <p><span className="font-medium">Phone:</span> {nidaData?.phone}</p>
-                  <p><span className="font-medium">Father's Name:</span> {nidaData?.fatherName}</p>
-                  <p><span className="font-medium">Mother's Name:</span> {nidaData?.motherName}</p>
-                  <p><span className="font-medium">Province:</span> {nidaData?.province}</p>
-                  <p><span className="font-medium">District:</span> {nidaData?.district}</p>
-                  <p><span className="font-medium">Address:</span> {nidaData?.address}</p>
+                  <p>
+                    <span className="font-medium">Name:</span>{" "}
+                    {nidaData?.fullName}
+                  </p>
+                  <p>
+                    <span className="font-medium">Gender:</span>{" "}
+                    {nidaData?.gender}
+                  </p>
+                  <p>
+                    <span className="font-medium">DOB:</span>{" "}
+                    {nidaData?.dob?.split("T")[0]}
+                  </p>
+                  <p>
+                    <span className="font-medium">Phone:</span>{" "}
+                    {nidaData?.phone}
+                  </p>
+                  <p>
+                    <span className="font-medium">Father's Name:</span>{" "}
+                    {nidaData?.fatherName}
+                  </p>
+                  <p>
+                    <span className="font-medium">Mother's Name:</span>{" "}
+                    {nidaData?.motherName}
+                  </p>
+                  <p>
+                    <span className="font-medium">Province:</span>{" "}
+                    {nidaData?.province}
+                  </p>
+                  <p>
+                    <span className="font-medium">District:</span>{" "}
+                    {nidaData?.district}
+                  </p>
+                  <p>
+                    <span className="font-medium">Address:</span>{" "}
+                    {nidaData?.address}
+                  </p>
                 </div>
               </div>
 
               {/* NESA Summary */}
               {/* NESA Summary */}
-{/* Show NESA data as read-only */}
-<div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4 mb-6">
-  <p className="text-sm font-semibold text-blue-700 dark:text-blue-400 mb-2">
-    ✓ Academic Records Verified
-  </p>
+              {/* Show NESA data as read-only */}
+              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4 mb-6">
+                <p className="text-sm font-semibold text-blue-700 dark:text-blue-400 mb-2">
+                  ✓ Academic Records Verified
+                </p>
 
-  {/* Result Badge */}
-  <div className="mb-3">
-    <span className={`px-3 py-1 rounded-full text-sm font-bold ${
-      nesaData?.result === 'PASS'
-        ? 'bg-green-100 text-green-700'
-        : 'bg-red-100 text-red-700'
-    }`}>
-      {nesaData?.result === 'PASS' ? '✅ PASS' : '❌ FAIL'}
-    </span>
-  </div>
+                {/* Result Badge */}
+                <div className="mb-3">
+                  <span
+                    className={`px-3 py-1 rounded-full text-sm font-bold ${
+                      nesaData?.result === "PASS"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-red-100 text-red-700"
+                    }`}
+                  >
+                    {nesaData?.result === "PASS" ? "✅ PASS" : "❌ FAIL"}
+                  </span>
+                </div>
 
-  <div className="grid grid-cols-2 gap-2 text-sm text-gray-700 dark:text-gray-300">
-    <p><span className="font-medium">Name:</span> {nesaData?.fullName}</p>
-    <p><span className="font-medium">School:</span> {nesaData?.school}</p>
-    <p><span className="font-medium">Option:</span> {nesaData?.option}</p>
-    <p><span className="font-medium">Year:</span> {nesaData?.yearCompleted}</p>
-  </div>
+                <div className="grid grid-cols-2 gap-2 text-sm text-gray-700 dark:text-gray-300">
+                  <p>
+                    <span className="font-medium">Name:</span>{" "}
+                    {nesaData?.fullName}
+                  </p>
+                  <p>
+                    <span className="font-medium">School:</span>{" "}
+                    {nesaData?.school}
+                  </p>
+                  <p>
+                    <span className="font-medium">Option:</span>{" "}
+                    {nesaData?.option}
+                  </p>
+                  <p>
+                    <span className="font-medium">Year:</span>{" "}
+                    {nesaData?.yearCompleted}
+                  </p>
+                </div>
 
-  {/* Grades */}
-  <div className="mt-3">
-    <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-      Grades:
-    </p>
-    <div className="flex flex-wrap gap-2">
-      {Object.entries(nesaData?.grades || {}).map(([subject, grade]) => (
-        <span
-          key={subject}
-          className="bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-200 text-xs px-2 py-1 rounded-full"
-        >
-          {subject}: {grade}
-        </span>
-      ))}
-    </div>
-  </div>
-</div>
-
+                {/* Grades */}
+                <div className="mt-3">
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Grades:
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {Object.entries(nesaData?.grades || {}).map(
+                      ([subject, grade]) => (
+                        <span
+                          key={subject}
+                          className="bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-200 text-xs px-2 py-1 rounded-full"
+                        >
+                          {subject}: {grade}
+                        </span>
+                      ),
+                    )}
+                  </div>
+                </div>
+              </div>
 
               {/* CV Upload */}
               <div className="mb-6">

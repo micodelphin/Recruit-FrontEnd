@@ -44,6 +44,7 @@ const ApplicationDetail = () => {
   const [showReviewBox, setShowReviewBox] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState("");
   const [showCV, setShowCV] = useState(false);
+  const [photoOpen, setPhotoOpen] = useState(false);
 
   useEffect(() => {
     const fetchApplication = async () => {
@@ -69,42 +70,42 @@ const ApplicationDetail = () => {
   }, [cvUrl]);
 
   const submitReview = async (status, comment) => {
-  setReviewing(true);
-  try {
-    await reviewApplication(id, { status, reviewComment: comment });
-    toast.success(
-      `Application ${status.toLowerCase().replace("_", " ")} successfully.`,
-    );
-    navigate("/hr/applications");
-  } catch (error) {
-    toast.error(
-      error.response?.data?.message || "Error reviewing application.",
-    );
-  } finally {
-    setReviewing(false);
-  }
-};
+    setReviewing(true);
+    try {
+      await reviewApplication(id, { status, reviewComment: comment });
+      toast.success(
+        `Application ${status.toLowerCase().replace("_", " ")} successfully.`,
+      );
+      navigate("/hr/applications");
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || "Error reviewing application.",
+      );
+    } finally {
+      setReviewing(false);
+    }
+  };
 
-const handleReview = async () => {
-  setCommentError("");
-  if (selectedStatus === "REJECTED" && !reviewComment.trim()) {
-    setCommentError("A reason is required when rejecting an application.");
-    return;
-  }
-  submitReview(selectedStatus, reviewComment);
-};
+  const handleReview = async () => {
+    setCommentError("");
+    if (selectedStatus === "REJECTED" && !reviewComment.trim()) {
+      setCommentError("A reason is required when rejecting an application.");
+      return;
+    }
+    submitReview(selectedStatus, reviewComment);
+  };
 
- const openReview = (status) => {
-  setSelectedStatus(status);
-  setReviewComment("");
-  setCommentError("");
+  const openReview = (status) => {
+    setSelectedStatus(status);
+    setReviewComment("");
+    setCommentError("");
 
-  if (status === "REJECTED") {
-    setShowReviewBox(true);
-  } else {
-    submitReview(status, "");
-  }
-};
+    if (status === "REJECTED") {
+      setShowReviewBox(true);
+    } else {
+      submitReview(status, "");
+    }
+  };
 
   const handleViewCV = async () => {
     if (cvUrl) {
@@ -222,51 +223,100 @@ const handleReview = async () => {
               <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
                 Personal Information
               </h2>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <p className="text-gray-500">National ID</p>
-                  <p className="font-medium text-gray-800 dark:text-white">
-                    {application?.nationalId}
-                  </p>
+              <div className="flex gap-6">
+                {/* Left — Info Grid */}
+                <div className="grid grid-cols-2 gap-4 text-sm flex-1">
+                  <div>
+                    <p className="text-gray-500">National ID</p>
+                    <p className="font-medium text-gray-800 dark:text-white">
+                      {application?.nationalId}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Gender</p>
+                    <p className="font-medium text-gray-800 dark:text-white">
+                      {application?.gender}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Date of Birth</p>
+                    <p className="font-medium text-gray-800 dark:text-white">
+                      {new Date(application?.dateOfBirth).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Phone</p>
+                    <p className="font-medium text-gray-800 dark:text-white">
+                      {application?.phone || "N/A"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Address</p>
+                    <p className="font-medium text-gray-800 dark:text-white">
+                      {application?.address}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Province</p>
+                    <p className="font-medium text-gray-800 dark:text-white">
+                      {application?.province}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">District</p>
+                    <p className="font-medium text-gray-800 dark:text-white">
+                      {application?.district}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-gray-500">Gender</p>
-                  <p className="font-medium text-gray-800 dark:text-white">
-                    {application?.gender}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Date of Birth</p>
-                  <p className="font-medium text-gray-800 dark:text-white">
-                    {new Date(application?.dateOfBirth).toLocaleDateString()}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Phone</p>
-                  <p className="font-medium text-gray-800 dark:text-white">
-                    {application?.phone || "N/A"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Address</p>
-                  <p className="font-medium text-gray-800 dark:text-white">
-                    {application?.address}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Province</p>
-                  <p className="font-medium text-gray-800 dark:text-white">
-                    {application?.province}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-500">District</p>
-                  <p className="font-medium text-gray-800 dark:text-white">
-                    {application?.district}
-                  </p>
+
+                {/* Right — NIDA Photo */}
+                <div className="flex flex-col items-center justify-start gap-2 flex-shrink-0">
+                  {application?.photoUrl ? (
+                    <>
+                      <img
+                        src={application.photoUrl}
+                        alt="NIDA Photo"
+                        onClick={() => setPhotoOpen(true)}
+                        className="w-32 h-40 object-cover rounded-lg border-2 border-gray-200 dark:border-gray-600 shadow-sm cursor-pointer hover:opacity-90 transition"
+                      />
+                      <p className="text-xs text-gray-400">Click to enlarge</p>
+                    </>
+                  ) : (
+                    <div className="w-32 h-40 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 flex flex-col items-center justify-center gap-2">
+                      <p className="text-xs text-gray-400 text-center">
+                        No photo available
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
+
+            {/* Photo Lightbox */}
+            {photoOpen && (
+              <div
+                className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50"
+                onClick={() => setPhotoOpen(false)}
+              >
+                <div className="relative" onClick={(e) => e.stopPropagation()}>
+                  <img
+                    src={application.photoUrl}
+                    alt="NIDA Photo"
+                    className="max-h-[80vh] max-w-[90vw] rounded-xl shadow-2xl object-contain"
+                  />
+                  <button
+                    onClick={() => setPhotoOpen(false)}
+                    className="absolute -top-3 -right-3 bg-white text-gray-800 rounded-full w-8 h-8 flex items-center justify-center shadow-lg text-sm font-bold hover:bg-gray-100 transition"
+                  >
+                    ✕
+                  </button>
+                  <p className="text-center text-white text-xs mt-3 opacity-70">
+                    Click outside to close
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Academic Info */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">

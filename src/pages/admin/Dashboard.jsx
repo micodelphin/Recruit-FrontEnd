@@ -14,6 +14,7 @@ import {
   TabPanels, List, ListItem,
 } from '@tremor/react';
 import toast from "react-hot-toast";
+import { BounceLoader } from 'react-spinners';
 
 const ROLE_COLORS  = ["#6366f1", "#8b5cf6", "#ec4899"];
 const STATUS_COLORS = ["#10b981", "#ef4444"];
@@ -49,7 +50,7 @@ const AdminDashboard = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <p className="text-gray-500">Loading dashboard...</p>
+        <BounceLoader size={50} color="#3B82F6" />
       </div>
     );
   }

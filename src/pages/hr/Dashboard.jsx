@@ -8,6 +8,7 @@ import {
 } from "recharts";
 import { FaFileAlt, FaClock, FaCheckCircle, FaTimesCircle, FaSearch } from "react-icons/fa";
 import toast from "react-hot-toast";
+import { BounceLoader } from 'react-spinners';
 
 const COLORS = ["#f59e0b", "#3b82f6", "#10b981", "#ef4444"];
 
@@ -20,6 +21,7 @@ const HRDashboard = () => {
   const navigate = useNavigate();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showPhotoPopup, setShowPhotoPopup] = useState(false);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -36,12 +38,12 @@ const HRDashboard = () => {
   }, []);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-gray-500">Loading dashboard...</p>
-      </div>
-    );
-  }
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <BounceLoader size={50} color="#3B82F6" />
+    </div>
+  );
+}
 
   const statusData = [
     { name: "Pending", value: stats?.applications?.pending || 0 },
@@ -184,6 +186,49 @@ const HRDashboard = () => {
                   className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
                   onClick={() => navigate(`/hr/applications/${app.id}`)}
                 >
+                  <td className="py-3 text-gray-800 dark:text-gray-200">
+  <div className="flex items-center gap-3">
+    {app.photoUrl ? (
+      <img
+        src={app.photoUrl}
+        alt={`${app.firstName} ${app.lastName}`}
+        className="w-8 h-8 rounded-full object-cover flex-shrink-0 border border-gray-200 dark:border-gray-600 cursor-pointer"
+        onClick={() => setShowPhotoPopup(true)}
+      />
+    ) : (
+      <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center flex-shrink-0">
+        <span className="text-xs font-bold text-indigo-600 dark:text-indigo-300">
+          {app.firstName?.charAt(0)}{app.lastName?.charAt(0)}
+        </span>
+      </div>
+    )}
+    {app.firstName} {app.lastName}
+  </div>
+
+  {showPhotoPopup && (
+    <div
+      className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50"
+      onClick={() => setShowPhotoPopup(false)}
+    >
+      <div
+        className="relative"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <img
+          src={app.photoUrl}
+          alt="Full Profile"
+          className="max-h-[80vh] max-w-[80vw] rounded-lg shadow-lg border-4 border-white"
+        />
+        <button
+          onClick={() => setShowPhotoPopup(false)}
+          className="absolute top-2 right-2 bg-white text-black px-3 py-1 rounded-md shadow hover:bg-gray-200"
+        >
+          ✕
+        </button>
+      </div>
+    </div>
+  )}
+</td>
                   <td className="py-3 text-gray-800 dark:text-gray-200">
                     {app.firstName} {app.lastName}
                   </td>

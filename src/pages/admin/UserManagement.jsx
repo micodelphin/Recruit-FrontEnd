@@ -18,6 +18,7 @@ import {
   FaKey,
 } from "react-icons/fa";
 import toast from "react-hot-toast";
+import { BounceLoader } from 'react-spinners';
 
 const adminLinks = [
   { path: "/admin/dashboard", label: "Dashboard", icon: <FaFileAlt /> },
@@ -220,7 +221,9 @@ const UserManagement = () => {
 
         {/* Table */}
         {loading ? (
-          <p className="text-gray-500">Loading users...</p>
+          <div className="flex items-center justify-center py-10">
+    <BounceLoader size={40} color="#3B82F6" />
+  </div>
         ) : (
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
             <table className="w-full text-sm">

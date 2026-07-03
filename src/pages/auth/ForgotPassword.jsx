@@ -10,6 +10,8 @@ const ForgotPassword = () => {
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const navigate = useNavigate();
+  const BG_IMAGE =
+  "https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=1920&q=80";
 
 const [darkMode, setDarkMode] = useState(() => {
   return localStorage.getItem('darkMode') === 'true';
@@ -40,8 +42,18 @@ useEffect(() => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 p-4 relative overflow-hidden">
-      <div className="absolute -top-20 -left-20 w-72 h-72 rounded-full bg-gradient-to-br from-indigo-500 to-blue-600 opacity-80" />
-      <div className="absolute -bottom-20 -right-20 w-72 h-72 rounded-full bg-gradient-to-br from-blue-500 to-indigo-700 opacity-80" />
+      {/* Blurred background image (z-0, lowest layer) */}
+    <div
+      className="absolute inset-0 bg-cover bg-center scale-110 z-0"
+      style={{
+        backgroundImage: `url(${BG_IMAGE})`,
+        filter: "blur(8px) brightness(0.6)",
+      }}
+    />
+
+    {/* Decorative blobs (z-10, ABOVE the background now) */}
+    <div className="absolute -top-20 -left-20 w-72 h-72 rounded-full bg-gradient-to-br from-indigo-500 to-blue-600 opacity-70 z-10" />
+    <div className="absolute -bottom-20 -right-20 w-72 h-72 rounded-full bg-gradient-to-br from-blue-500 to-indigo-700 opacity-70 z-10" />
 
       <button
         onClick={() => setDarkMode(!darkMode)}

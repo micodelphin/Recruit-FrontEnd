@@ -3,12 +3,27 @@ import { useNavigate } from "react-router-dom";
 import Sidebar from "../../components/shared/Sidebar";
 import { getDashboardStats } from "../../services/api";
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  Tooltip, PieChart, Pie, Cell, ResponsiveContainer, Legend,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
 } from "recharts";
-import { FaFileAlt, FaClock, FaCheckCircle, FaTimesCircle, FaSearch } from "react-icons/fa";
+import {
+  FaFileAlt,
+  FaClock,
+  FaCheckCircle,
+  FaTimesCircle,
+  FaSearch,
+} from "react-icons/fa";
 import toast from "react-hot-toast";
-import { BounceLoader } from 'react-spinners';
+import { BounceLoader } from "react-spinners";
 
 const COLORS = ["#f59e0b", "#3b82f6", "#10b981", "#ef4444"];
 
@@ -37,13 +52,40 @@ const HRDashboard = () => {
     fetchStats();
   }, []);
 
+  const statCards = [
+    {
+      label: "Total Applications",
+      value: stats?.applications?.total || 0,
+      icon: <FaFileAlt className="text-indigo-500 text-2xl" />,
+      bg: "bg-indigo-50 dark:bg-indigo-900/30",
+    },
+    {
+      label: "Pending",
+      value: stats?.applications?.pending || 0,
+      icon: <FaClock className="text-yellow-500 text-2xl" />,
+      bg: "bg-yellow-50 dark:bg-yellow-900/30",
+    },
+    {
+      label: "Approved",
+      value: stats?.applications?.approved || 0,
+      icon: <FaCheckCircle className="text-green-500 text-2xl" />,
+      bg: "bg-green-50 dark:bg-green-900/30",
+    },
+    {
+      label: "Rejected",
+      value: stats?.applications?.rejected || 0,
+      icon: <FaTimesCircle className="text-red-500 text-2xl" />,
+      bg: "bg-red-50 dark:bg-red-900/30",
+    },
+  ];
+
   if (loading) {
-  return (
-    <div className="flex items-center justify-center min-h-screen">
-      <BounceLoader size={50} color="#3B82F6" />
-    </div>
-  );
-}
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <BounceLoader size={50} color="#3B82F6" />
+      </div>
+    );
+  }
 
   const statusData = [
     { name: "Pending", value: stats?.applications?.pending || 0 },
@@ -55,33 +97,6 @@ const HRDashboard = () => {
   const genderData = [
     { name: "Male", value: stats?.genderBreakdown?.male || 0 },
     { name: "Female", value: stats?.genderBreakdown?.female || 0 },
-  ];
-
-  const statCards = [
-    {
-      label: "Total Applications",
-      value: stats?.applications?.total || 0,
-      icon: <FaFileAlt className="text-indigo-500 text-2xl" />,
-      bg: "bg-indigo-50",
-    },
-    {
-      label: "Pending",
-      value: stats?.applications?.pending || 0,
-      icon: <FaClock className="text-yellow-500 text-2xl" />,
-      bg: "bg-yellow-50",
-    },
-    {
-      label: "Approved",
-      value: stats?.applications?.approved || 0,
-      icon: <FaCheckCircle className="text-green-500 text-2xl" />,
-      bg: "bg-green-50",
-    },
-    {
-      label: "Rejected",
-      value: stats?.applications?.rejected || 0,
-      icon: <FaTimesCircle className="text-red-500 text-2xl" />,
-      bg: "bg-red-50",
-    },
   ];
 
   return (
@@ -106,8 +121,12 @@ const HRDashboard = () => {
             >
               <div>{card.icon}</div>
               <div>
-                <p className="text-sm text-gray-500">{card.label}</p>
-                <p className="text-2xl font-bold text-gray-800">{card.value}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  {card.label}
+                </p>
+                <p className="text-2xl font-bold text-gray-800 dark:text-white">
+                  {card.value}
+                </p>
               </div>
             </div>
           ))}
@@ -144,22 +163,62 @@ const HRDashboard = () => {
           {/* Gender Bar Chart */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
             <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
-              Applications by Gender
+              Applications by Gender per Month
             </h2>
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={genderData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis allowDecimals={false} />
-                <Tooltip />
-                <Bar dataKey="value" fill="#6366f1" radius={[4, 4, 0, 0]} />
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart
+                data={stats.monthlyGenderData}
+                margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
+                barCategoryGap="30%"
+                barGap={4}
+              >
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="#e5e7eb"
+                  vertical={false}
+                />
+                <XAxis
+                  dataKey="month"
+                  tick={{ fontSize: 12, fill: "#6b7280" }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  allowDecimals={false}
+                  tick={{ fontSize: 12, fill: "#6b7280" }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <Tooltip
+                  cursor={{ fill: "rgba(99,102,241,0.05)" }}
+                  contentStyle={{
+                    borderRadius: "8px",
+                    border: "1px solid #e5e7eb",
+                    fontSize: "13px",
+                  }}
+                />
+                <Legend
+                  wrapperStyle={{ fontSize: "13px", paddingTop: "12px" }}
+                />
+                <Bar
+                  dataKey="Male"
+                  name="Male"
+                  fill="#bfdbfe"
+                  radius={[4, 4, 0, 0]}
+                />
+                <Bar
+                  dataKey="Female"
+                  name="Female"
+                  fill="#2563eb"
+                  radius={[4, 4, 0, 0]}
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         {/* Recent Applications */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 ">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
               Recent Applications
@@ -187,61 +246,64 @@ const HRDashboard = () => {
                   onClick={() => navigate(`/hr/applications/${app.id}`)}
                 >
                   <td className="py-3 text-gray-800 dark:text-gray-200">
-  <div className="flex items-center gap-3">
-    {app.photoUrl ? (
-      <img
-        src={app.photoUrl}
-        alt={`${app.firstName} ${app.lastName}`}
-        className="w-8 h-8 rounded-full object-cover flex-shrink-0 border border-gray-200 dark:border-gray-600 cursor-pointer"
-        onClick={() => setShowPhotoPopup(true)}
-      />
-    ) : (
-      <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center flex-shrink-0">
-        <span className="text-xs font-bold text-indigo-600 dark:text-indigo-300">
-          {app.firstName?.charAt(0)}{app.lastName?.charAt(0)}
-        </span>
-      </div>
-    )}
-    {app.firstName} {app.lastName}
-  </div>
+                    <div className="flex items-center gap-3">
+                      {app.photoUrl ? (
+                        <img
+                          src={app.photoUrl}
+                          alt={`${app.firstName} ${app.lastName}`}
+                          className="w-8 h-8 rounded-full object-cover flex-shrink-0 border border-gray-200 dark:border-gray-600 cursor-pointer"
+                          onClick={() => setShowPhotoPopup(true)}
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center flex-shrink-0">
+                          <span className="text-xs font-bold text-indigo-600 dark:text-indigo-300">
+                            {app.firstName?.charAt(0)}
+                            {app.lastName?.charAt(0)}
+                          </span>
+                        </div>
+                      )}
+                      {app.firstName} {app.lastName}
+                    </div>
 
-  {showPhotoPopup && (
-    <div
-      className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50"
-      onClick={() => setShowPhotoPopup(false)}
-    >
-      <div
-        className="relative"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <img
-          src={app.photoUrl}
-          alt="Full Profile"
-          className="max-h-[80vh] max-w-[80vw] rounded-lg shadow-lg border-4 border-white"
-        />
-        <button
-          onClick={() => setShowPhotoPopup(false)}
-          className="absolute top-2 right-2 bg-white text-black px-3 py-1 rounded-md shadow hover:bg-gray-200"
-        >
-          ✕
-        </button>
-      </div>
-    </div>
-  )}
-</td>
+                    {showPhotoPopup && (
+                      <div
+                        className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50"
+                        onClick={() => setShowPhotoPopup(false)}
+                      >
+                        <div
+                          className="relative"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <img
+                            src={app.photoUrl}
+                            alt="Full Profile"
+                            className="max-h-[80vh] max-w-[80vw] rounded-lg shadow-lg border-4 border-white"
+                          />
+                          <button
+                            onClick={() => setShowPhotoPopup(false)}
+                            className="absolute top-2 right-2 bg-white text-black px-3 py-1 rounded-md shadow hover:bg-gray-200"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </td>
                   <td className="py-3 text-gray-800 dark:text-gray-200">
                     {app.firstName} {app.lastName}
                   </td>
                   <td className="py-3">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      app.status === "PENDING"
-                        ? "bg-yellow-100 text-yellow-700"
-                        : app.status === "UNDER_REVIEW"
-                        ? "bg-blue-100 text-blue-700"
-                        : app.status === "APPROVED"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-red-100 text-red-700"
-                    }`}>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        app.status === "PENDING"
+                          ? "bg-yellow-100 text-yellow-700"
+                          : app.status === "UNDER_REVIEW"
+                            ? "bg-blue-100 text-blue-700"
+                            : app.status === "APPROVED"
+                              ? "bg-green-100 text-green-700"
+                              : "bg-red-100 text-red-700"
+                      }`}
+                    >
                       {app.status}
                     </span>
                   </td>

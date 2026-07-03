@@ -22,6 +22,9 @@ import ApplicationDetail from './pages/hr/ApplicationDetail';
 import AdminDashboard from './pages/admin/Dashboard';
 import UserManagement from './pages/admin/UserManagement';
 
+import Settings from './pages/shared/Settings';
+import Notifications from './pages/shared/Notifications';
+
 function App() {
   return (
     <AuthProvider>
@@ -74,6 +77,17 @@ function App() {
           <Route path="/admin/users" element={
             <ProtectedRoute roles={['SUPER_ADMIN']}>
               <UserManagement />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/settings" element={
+            <ProtectedRoute allowedRoles={['HR', 'SUPER_ADMIN']}>
+              <Settings />
+            </ProtectedRoute>
+          } />
+          <Route path="/notifications" element={
+            <ProtectedRoute allowedRoles={['HR', 'SUPER_ADMIN']}>
+              <Notifications />
             </ProtectedRoute>
           } />
 

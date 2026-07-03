@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { getMyApplication, getNESARecord } from "../../services/api";
 import { useAuth } from "../../context/authContex";
 import toast from "react-hot-toast";
+import { FaSignOutAlt } from "react-icons/fa";
 
 const statusConfig = {
   PENDING: {
@@ -90,8 +91,9 @@ const ApplicationStatus = () => {
           </div>
           <button
             onClick={handleLogout}
-            className="text-sm text-red-500 hover:underline"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition text-sm font-medium"
           >
+            <FaSignOutAlt />
             Logout
           </button>
         </div>
@@ -125,92 +127,100 @@ const ApplicationStatus = () => {
         </div>
 
         {/* Application Details */}
-<div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mb-6">
-  <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
-    Personal Information
-  </h2>
-  <div className="flex gap-6">
-    {/* Left — Info Grid */}
-    <div className="grid grid-cols-2 gap-4 text-sm text-gray-700 dark:text-gray-300 flex-1">
-      <div>
-        <p className="font-medium text-gray-500">Full Name</p>
-        <p>{application?.firstName} {application?.lastName}</p>
-      </div>
-      <div>
-        <p className="font-medium text-gray-500">National ID</p>
-        <p>{application?.nationalId}</p>
-      </div>
-      <div>
-        <p className="font-medium text-gray-500">Gender</p>
-        <p>{application?.gender}</p>
-      </div>
-      <div>
-        <p className="font-medium text-gray-500">Date of Birth</p>
-        <p>{application?.dateOfBirth ? new Date(application.dateOfBirth).toLocaleDateString() : "N/A"}</p>
-      </div>
-      <div>
-        <p className="font-medium text-gray-500">Phone</p>
-        <p>{application?.phone || "N/A"}</p>
-      </div>
-      <div>
-        <p className="font-medium text-gray-500">Address</p>
-        <p>{application?.address || "N/A"}</p>
-      </div>
-      <div>
-        <p className="font-medium text-gray-500">Province</p>
-        <p>{application?.province || "N/A"}</p>
-      </div>
-      <div>
-        <p className="font-medium text-gray-500">District</p>
-        <p>{application?.district || "N/A"}</p>
-      </div>
-    </div>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mb-6">
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+            Personal Information
+          </h2>
+          <div className="flex gap-6">
+            {/* Left — Info Grid */}
+            <div className="grid grid-cols-2 gap-4 text-sm text-gray-700 dark:text-gray-300 flex-1">
+              <div>
+                <p className="font-medium text-gray-500">Full Name</p>
+                <p>
+                  {application?.firstName} {application?.lastName}
+                </p>
+              </div>
+              <div>
+                <p className="font-medium text-gray-500">National ID</p>
+                <p>{application?.nationalId}</p>
+              </div>
+              <div>
+                <p className="font-medium text-gray-500">Gender</p>
+                <p>{application?.gender}</p>
+              </div>
+              <div>
+                <p className="font-medium text-gray-500">Date of Birth</p>
+                <p>
+                  {application?.dateOfBirth
+                    ? new Date(application.dateOfBirth).toLocaleDateString()
+                    : "N/A"}
+                </p>
+              </div>
+              <div>
+                <p className="font-medium text-gray-500">Phone</p>
+                <p>{application?.phone || "N/A"}</p>
+              </div>
+              <div>
+                <p className="font-medium text-gray-500">Address</p>
+                <p>{application?.address || "N/A"}</p>
+              </div>
+              <div>
+                <p className="font-medium text-gray-500">Province</p>
+                <p>{application?.province || "N/A"}</p>
+              </div>
+              <div>
+                <p className="font-medium text-gray-500">District</p>
+                <p>{application?.district || "N/A"}</p>
+              </div>
+            </div>
 
-    {/* Right — NIDA Photo */}
-    <div className="flex flex-col items-center justify-start gap-2 flex-shrink-0">
-      {application?.photoUrl ? (
-        <>
-          <img
-            src={application.photoUrl}
-            alt="NIDA Photo"
-            onClick={() => setPhotoOpen(true)}
-            className="w-32 h-40 object-cover rounded-lg border-2 border-gray-200 dark:border-gray-600 shadow-sm cursor-pointer hover:opacity-90 transition"
-          />
-          <p className="text-xs text-gray-400">Click to enlarge</p>
-        </>
-      ) : (
-        <div className="w-32 h-40 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center">
-          <p className="text-xs text-gray-400 text-center px-2">No photo available</p>
+            {/* Right — NIDA Photo */}
+            <div className="flex flex-col items-center justify-start gap-2 flex-shrink-0">
+              {application?.photoUrl ? (
+                <>
+                  <img
+                    src={application.photoUrl}
+                    alt="NIDA Photo"
+                    onClick={() => setPhotoOpen(true)}
+                    className="w-32 h-40 object-cover rounded-lg border-2 border-gray-200 dark:border-gray-600 shadow-sm cursor-pointer hover:opacity-90 transition"
+                  />
+                  <p className="text-xs text-gray-400">Click to enlarge</p>
+                </>
+              ) : (
+                <div className="w-32 h-40 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center">
+                  <p className="text-xs text-gray-400 text-center px-2">
+                    No photo available
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
-      )}
-    </div>
-  </div>
-</div>
 
-{/* Photo Lightbox */}
-{photoOpen && (
-  <div
-    className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50"
-    onClick={() => setPhotoOpen(false)}
-  >
-    <div className="relative" onClick={(e) => e.stopPropagation()}>
-      <img
-        src={application.photoUrl}
-        alt="NIDA Photo"
-        className="max-h-[80vh] max-w-[90vw] rounded-xl shadow-2xl object-contain"
-      />
-      <button
-        onClick={() => setPhotoOpen(false)}
-        className="absolute -top-3 -right-3 bg-white text-gray-800 rounded-full w-8 h-8 flex items-center justify-center shadow-lg text-sm font-bold hover:bg-gray-100 transition"
-      >
-        ✕
-      </button>
-      <p className="text-center text-white text-xs mt-3 opacity-70">
-        Click outside to close
-      </p>
-    </div>
-  </div>
-)}
+        {/* Photo Lightbox */}
+        {photoOpen && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50"
+            onClick={() => setPhotoOpen(false)}
+          >
+            <div className="relative" onClick={(e) => e.stopPropagation()}>
+              <img
+                src={application.photoUrl}
+                alt="NIDA Photo"
+                className="max-h-[80vh] max-w-[90vw] rounded-xl shadow-2xl object-contain"
+              />
+              <button
+                onClick={() => setPhotoOpen(false)}
+                className="absolute -top-3 -right-3 bg-white text-gray-800 rounded-full w-8 h-8 flex items-center justify-center shadow-lg text-sm font-bold hover:bg-gray-100 transition"
+              >
+                ✕
+              </button>
+              <p className="text-center text-white text-xs mt-3 opacity-70">
+                Click outside to close
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Academic Info */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mb-6">

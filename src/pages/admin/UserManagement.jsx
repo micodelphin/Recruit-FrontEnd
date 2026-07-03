@@ -346,7 +346,7 @@ const UserManagement = () => {
                         onClick={() => setCurrentPage(page)}
                         className={`px-3 py-1 text-sm rounded-lg transition ${
                           currentPage === page
-                            ? "bg-indigo-600 text-white"
+                            ? "bg-blue-600 text-white"
                             : "border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
                         }`}
                       >

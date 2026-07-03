@@ -7,3 +7,21 @@
   background-color: white !important;
   color: #1f2937 !important;
 }
+
+/* Light mode autofill */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0px 1000px #ffffff inset !important;
+  -webkit-text-fill-color: #111827 !important;
+  caret-color: #111827;
+}
+
+/* Dark mode autofill */
+.dark input:-webkit-autofill,
+.dark input:-webkit-autofill:hover,
+.dark input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0px 1000px #374151 inset !important;
+  -webkit-text-fill-color: #f3f4f6 !important;
+  caret-color: #f3f4f6;
+}

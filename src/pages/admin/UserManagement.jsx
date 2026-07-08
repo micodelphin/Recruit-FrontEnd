@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Sidebar from "../../components/shared/Sidebar";
 import {
   getAllUsers,
@@ -18,7 +18,7 @@ import {
   FaKey,
 } from "react-icons/fa";
 import toast from "react-hot-toast";
-import { BounceLoader } from 'react-spinners';
+import { BounceLoader } from "react-spinners";
 
 const adminLinks = [
   { path: "/admin/dashboard", label: "Dashboard", icon: <FaFileAlt /> },
@@ -39,6 +39,8 @@ const emptyForm = {
   role: "HR",
 };
 
+const APPLICATIONS_PER_PAGE = 10;
+
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -56,6 +58,8 @@ const UserManagement = () => {
   const [newPassword, setNewPassword] = useState("");
   const [resetSaving, setResetSaving] = useState(false);
   const usersPerPage = 10;
+  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [applications, setApplications] = useState([]);
 
   const fetchUsers = async () => {
     try {
@@ -72,16 +76,45 @@ const UserManagement = () => {
     fetchUsers();
   }, []);
 
-  const filtered = users.filter((u) =>
-    `${u.firstName} ${u.lastName} ${u.email}`
-      .toLowerCase()
-      .includes(search.toLowerCase()),
-  );
+  const filtered = users.filter((u) => {
+  const matchesSearch = `${u.firstName} ${u.lastName} ${u.email}`
+    .toLowerCase()
+    .includes(search.toLowerCase());
+  const matchesRole = statusFilter === 'ALL' || u.role === statusFilter;
+  return matchesSearch && matchesRole;
+});
 
   const totalPages = Math.ceil(filtered.length / usersPerPage);
   const paginatedUsers = filtered.slice(
     (currentPage - 1) * usersPerPage,
     currentPage * usersPerPage,
+  );
+
+  const filteredApplications = useMemo(() => {
+    return applications
+      .filter((app) => {
+        const matchesSearch = `${app.firstName} ${app.lastName}`
+          .toLowerCase()
+          .includes(search.toLowerCase());
+        const matchesStatus =
+          statusFilter === "ALL" || app.status === statusFilter;
+        return matchesSearch && matchesStatus;
+      })
+      .sort((a, b) =>
+        `${a.firstName} ${a.lastName}`.localeCompare(
+          `${b.firstName} ${b.lastName}`,
+        ),
+      );
+  }, [applications, search, statusFilter]);
+
+  const totalPagess = Math.ceil(
+    filteredApplications.length / APPLICATIONS_PER_PAGE,
+  );
+  const indexOfLast = currentPage * APPLICATIONS_PER_PAGE;
+  const indexOfFirst = indexOfLast - APPLICATIONS_PER_PAGE;
+  const paginatedApplications = filteredApplications.slice(
+    indexOfFirst,
+    indexOfLast,
   );
 
   const handleChange = (e) => {
@@ -219,11 +252,39 @@ const UserManagement = () => {
           />
         </div>
 
+        {/* Status Filter Buttons + Export */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-white/10 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap">
+            {["ALL", "APPLICANT", "HR", "SUPER_ADMIN"].map((role) => (
+              <button
+                key={role}
+                onClick={() => {
+                  setStatusFilter(role);
+                  setCurrentPage(1);
+                }}
+                className={`px-4 py-1.5 rounded-full text-xs font-medium transition ${
+                  statusFilter === role
+                    ? role === "ALL"
+                      ? "bg-blue-600 text-white"
+                      : role === "APPLICANT"
+                        ? "bg-blue-500 text-white"
+                        : role === "HR"
+                          ? "bg-purple-500 text-white"
+                          : "bg-red-500 text-white"
+                    : "bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/20"
+                }`}
+              >
+                {role.replace("_", " ")}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Table */}
         {loading ? (
           <div className="flex items-center justify-center py-10">
-    <BounceLoader size={40} color="#3B82F6" />
-  </div>
+            <BounceLoader size={40} color="#3B82F6" />
+          </div>
         ) : (
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
             <table className="w-full text-sm">
@@ -437,7 +498,7 @@ const UserManagement = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  autoComplete="off"
+                  autoComplete="email"
                   className={`mt-1 w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100 ${
                     errors.email
                       ? "border-red-500"
@@ -461,6 +522,7 @@ const UserManagement = () => {
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
+                    autoComplete="new-password"
                     className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white text-sm ${
                       formErrors.password
                         ? "border-red-500"
@@ -514,55 +576,60 @@ const UserManagement = () => {
         </div>
       )}
       {resetModal && (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-8 w-full max-w-sm">
-      <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">Reset Password</h2>
-      <p className="text-gray-500 dark:text-gray-400 text-sm mb-4">
-        Set a new password for{' '}
-        <span className="font-medium text-gray-800 dark:text-white">
-          {resetModal.firstName} {resetModal.lastName}
-        </span>
-      </p>
-      <input
-        type="password"
-        placeholder="New password (min 8 characters)"
-        value={newPassword}
-        onChange={(e) => setNewPassword(e.target.value)}
-        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 mb-4 focus:outline-none focus:ring-2 focus:ring-yellow-500 dark:bg-gray-700 dark:text-white text-sm"
-      />
-      <div className="flex space-x-3">
-        <button
-          onClick={() => setResetModal(null)}
-          className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition text-sm"
-        >
-          Cancel
-        </button>
-        <button
-          disabled={resetSaving}
-          onClick={async () => {
-            if (!newPassword || newPassword.length < 8) {
-              toast.error('Password must be at least 8 characters.');
-              return;
-            }
-            setResetSaving(true);
-            try {
-              await resetUserPassword(resetModal.id, { newPassword });
-              toast.success('Password reset successfully.');
-              setResetModal(null);
-            } catch (err) {
-              toast.error(err?.response?.data?.message || 'Error resetting password.');
-            } finally {
-              setResetSaving(false);
-            }
-          }}
-          className="flex-1 bg-yellow-500 text-white py-2 rounded-lg hover:bg-yellow-600 transition text-sm disabled:opacity-60"
-        >
-          {resetSaving ? 'Resetting...' : 'Reset'}
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-8 w-full max-w-sm">
+            <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">
+              Reset Password
+            </h2>
+            <p className="text-gray-500 dark:text-gray-400 text-sm mb-4">
+              Set a new password for{" "}
+              <span className="font-medium text-gray-800 dark:text-white">
+                {resetModal.firstName} {resetModal.lastName}
+              </span>
+            </p>
+            <input
+              type="password"
+              placeholder="New password (min 8 characters)"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 mb-4 focus:outline-none focus:ring-2 focus:ring-yellow-500 dark:bg-gray-700 dark:text-white text-sm"
+            />
+            <div className="flex space-x-3">
+              <button
+                onClick={() => setResetModal(null)}
+                className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                disabled={resetSaving}
+                onClick={async () => {
+                  if (!newPassword || newPassword.length < 8) {
+                    toast.error("Password must be at least 8 characters.");
+                    return;
+                  }
+                  setResetSaving(true);
+                  try {
+                    await resetUserPassword(resetModal.id, { newPassword });
+                    toast.success("Password reset successfully.");
+                    setResetModal(null);
+                  } catch (err) {
+                    toast.error(
+                      err?.response?.data?.message ||
+                        "Error resetting password.",
+                    );
+                  } finally {
+                    setResetSaving(false);
+                  }
+                }}
+                className="flex-1 bg-yellow-500 text-white py-2 rounded-lg hover:bg-yellow-600 transition text-sm disabled:opacity-60"
+              >
+                {resetSaving ? "Resetting..." : "Reset"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

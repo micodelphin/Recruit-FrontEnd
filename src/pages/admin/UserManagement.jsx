@@ -19,6 +19,7 @@ import {
 } from "react-icons/fa";
 import toast from "react-hot-toast";
 import { BounceLoader } from "react-spinners";
+import * as XLSX from "xlsx";
 
 const adminLinks = [
   { path: "/admin/dashboard", label: "Dashboard", icon: <FaFileAlt /> },
@@ -214,6 +215,24 @@ const UserManagement = () => {
     }
   };
 
+  const handleExportUsers = () => {
+  const exportData = filtered.map((user, index) => ({
+    "#": index + 1,
+    "First Name": user.firstName,
+    "Last Name": user.lastName,
+    "Email": user.email,
+    "Role": user.role.replace("_", " "),
+    "Status": user.isActive ? "Active" : "Inactive",
+    "Joined": new Date(user.createdAt).toLocaleDateString(),
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(exportData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Users");
+  XLSX.writeFile(workbook, `users_${new Date().toISOString().split("T")[0]}.xlsx`);
+  toast.success("Users exported successfully.");
+};
+
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
       <Sidebar links={adminLinks} />
@@ -278,6 +297,12 @@ const UserManagement = () => {
               </button>
             ))}
           </div>
+          <button
+    onClick={handleExportUsers}
+    className="flex items-center space-x-2 bg-green-600 text-white px-4 py-1.5 rounded-full text-xs font-medium hover:bg-green-700 transition"
+  >
+    <span>📊 Export to Excel</span>
+  </button>
         </div>
 
         {/* Table */}

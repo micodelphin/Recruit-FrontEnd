@@ -1,7 +1,8 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect,useRef } from 'react';
 import { getMe, getMyApplication } from '../services/api';
 
 const AuthContext = createContext();
+const TIMEOUT_MS = 20 * 60 * 1000; // 20 minutes
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -9,6 +10,7 @@ export const AuthProvider = ({ children }) => {
   const [darkMode, setDarkMode] = useState(() => {
     return localStorage.getItem('darkMode') === 'true';
   });
+  const timerRef = useRef(null);
 
     // Apply dark class to <html> whenever darkMode changes
   useEffect(() => {
@@ -34,6 +36,31 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }
 }, []);
+
+useEffect(() => {
+  if (!user) return;
+
+  const resetTimer = () => {
+    clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
+      logoutUser();
+    }, TIMEOUT_MS);
+  };
+
+  const activityEvents = ['mousemove', 'keydown', 'click', 'scroll'];
+  activityEvents.forEach((event) =>
+    window.addEventListener(event, resetTimer)
+  );
+
+  resetTimer(); // start the clock as soon as user is set
+
+  return () => {
+    clearTimeout(timerRef.current);
+    activityEvents.forEach((event) =>
+      window.removeEventListener(event, resetTimer)
+    );
+  };
+}, [user]);
 
  const loginUser = (token, userData, rememberMe = true) => {
   if (rememberMe) {
